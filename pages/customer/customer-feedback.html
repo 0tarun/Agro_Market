@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Feedback - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/customer-account.css" />
+    <link rel="stylesheet" href="../../assets/css/customer-feedback.css" />
+</head>
+
+<body>
+    <main class="account-page">
+        <aside class="account-sidebar">
+            <div class="sidebar-top">
+                <img id="profileImage" class="profile-image" src="../../figma/images (2).jpg" alt="Customer profile" />
+                <h2 id="profileName" class="profile-name">Customer</h2>
+                <p id="profileLocation" class="profile-location">Location not set</p>
+
+                <nav class="sidebar-nav" aria-label="Customer account menu">
+                    <a href="customer-account.html" class="nav-item">Account Info</a>
+                    <a href="customer-orders.html" class="nav-item">Orders</a>
+                    <a href="#" class="nav-item">Notifications</a>
+                    <a href="customer-feedback.html" class="nav-item active">Feedback</a>
+                </nav>
+            </div>
+
+            <a href="../../logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="account-content feedback-content">
+            <header class="content-head">
+                <h1>My <span>Messages</span></h1>
+            </header>
+
+            <section id="feedbackList" class="feedback-list" aria-live="polite"></section>
+            <p id="feedbackEmptyState" class="feedback-empty">No conversations yet. Message a farmer from a product
+                page.</p>
+        </section>
+    </main>
+
+    <script>
+        (function setupCustomerFeedback() {
+            var PROFILE_API_URL = '../../customer-checkout-data.php';
+            var CHAT_API_URL = '../../feedback-chat-data.php';
+            var FALLBACK_IMAGE = '../../figma/images (2).jpg';
+
+            var profileImage = document.getElementById('profileImage');
+            var profileName = document.getElementById('profileName');
+            var profileLocation = document.getElementById('profileLocation');
+            var feedbackList = document.getElementById('feedbackList');
+            var feedbackEmptyState = document.getElementById('feedbackEmptyState');
+
+            function formatDate(raw) {
+                if (!raw) {
+                    return 'No messages yet';
+                }
+
+                var d = new Date(raw);
+                if (Number.isNaN(d.getTime())) {
+                    return raw;
+                }
+
+                return d.toLocaleString([], {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            }
+
+            function renderThreads(threads) {
+                feedbackList.innerHTML = '';
+                if (!Array.isArray(threads) || !threads.length) {
+                    feedbackEmptyState.style.display = 'block';
+                    return;
+                }
+
+                feedbackEmptyState.style.display = 'none';
+                threads.forEach(function (item) {
+                    var card = document.createElement('article');
+                    card.className = 'feedback-card';
+
+                    var left = document.createElement('div');
+                    left.className = 'feedback-left';
+
+                    var avatar = document.createElement('img');
+                    avatar.className = 'feedback-avatar';
+                    avatar.src = item.participant_image || FALLBACK_IMAGE;
+                    avatar.alt = item.participant_name || 'Farmer';
+                    avatar.onerror = function () { avatar.src = FALLBACK_IMAGE; };
+
+                    var body = document.createElement('div');
+
+                    var name = document.createElement('h3');
+                    name.textContent = item.participant_name || 'Farmer';
+
+                    var message = document.createElement('p');
+                    message.textContent = item.last_message || 'No message yet';
+
+                    var meta = document.createElement('small');
+                    meta.textContent = (item.participant_location || 'Location not set') + ' • ' + formatDate(item.last_message_at);
+
+                    body.appendChild(name);
+                    body.appendChild(message);
+                    body.appendChild(meta);
+
+                    if (Number(item.unread_count || 0) > 0) {
+                        var badge = document.createElement('span');
+                        badge.className = 'unread-badge';
+                        badge.textContent = String(item.unread_count);
+                        body.appendChild(badge);
+                    }
+
+                    left.appendChild(avatar);
+                    left.appendChild(body);
+
+                    var reply = document.createElement('a');
+                    reply.className = 'reply-btn';
+                    reply.textContent = 'Open';
+                    reply.href = 'message-conversation.html?thread_id=' + encodeURIComponent(String(item.thread_id || 0));
+
+                    card.appendChild(left);
+                    card.appendChild(reply);
+                    feedbackList.appendChild(card);
+                });
+            }
+
+            function loadProfile() {
+                fetch(PROFILE_API_URL, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            return;
+                        }
+
+                        profileName.textContent = data.full_name || 'Customer';
+                        profileLocation.textContent = data.address || 'Location not set';
+                        profileImage.src = data.profile_image || FALLBACK_IMAGE;
+                        profileImage.onerror = function () { profileImage.src = FALLBACK_IMAGE; };
+                    });
+            }
+
+            function loadThreads() {
+                fetch(CHAT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'list_threads'
+                    })
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            renderThreads([]);
+                            return;
+                        }
+
+                        renderThreads(Array.isArray(data.threads) ? data.threads : []);
+                    })
+                    .catch(function () {
+                        renderThreads([]);
+                    });
+            }
+
+            loadProfile();
+            loadThreads();
+            window.setInterval(loadThreads, 5000);
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversation - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/message-conversation.css" />
+</head>
+
+<body>
+    <main class="conversation-page">
+        <a href="customer-feedback.html" class="back-link" aria-label="Back to feedback">&larr;</a>
+
+        <section class="profile-area">
+            <img id="participantAvatar" src="../../figma/images (5).jpg" alt="Participant" class="big-avatar" />
+            <div>
+                <h1 id="participantName">Farmer</h1>
+                <p id="participantLocation">Loading...</p>
+            </div>
+        </section>
+
+        <section id="messageList" class="messages-list" aria-live="polite"></section>
+        <p id="conversationState" class="conversation-state">Loading messages...</p>
+    </main>
+
+    <footer class="composer-bar">
+        <div class="composer-wrap">
+            <label for="msgInput">Message</label>
+            <div class="composer-row">
+                <input id="msgInput" type="text" placeholder="Enter Message" />
+                <button id="sendBtn" type="button">Send</button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function setupCustomerConversation() {
+            var API_URL = '../../feedback-chat-data.php';
+            var FALLBACK_AVATAR = '../../figma/images (5).jpg';
+            var params = new URLSearchParams(window.location.search);
+            var threadId = Number(params.get('thread_id') || 0);
+            var farmerId = Number(params.get('farmer_id') || 0);
+
+            var participantAvatar = document.getElementById('participantAvatar');
+            var participantName = document.getElementById('participantName');
+            var participantLocation = document.getElementById('participantLocation');
+            var messageList = document.getElementById('messageList');
+            var conversationState = document.getElementById('conversationState');
+            var msgInput = document.getElementById('msgInput');
+            var sendBtn = document.getElementById('sendBtn');
+
+            function formatDate(raw) {
+                if (!raw) {
+                    return '';
+                }
+
+                var d = new Date(raw);
+                if (Number.isNaN(d.getTime())) {
+                    return raw;
+                }
+
+                return d.toLocaleString([], {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            }
+
+            function renderMessages(messages, options) {
+                options = options || {};
+                var prevTop = messageList.scrollTop;
+                var prevHeight = messageList.scrollHeight;
+                var nearBottom = (prevHeight - prevTop - messageList.clientHeight) < 56;
+
+                messageList.innerHTML = '';
+
+                if (!Array.isArray(messages) || !messages.length) {
+                    messageList.innerHTML = '<p class="message-empty">No messages yet. Send a message to start.</p>';
+                    conversationState.textContent = '';
+                    return;
+                }
+
+                conversationState.textContent = '';
+                messages.forEach(function (item) {
+                    var row = document.createElement('article');
+                    row.className = 'message-row ' + (item.is_mine ? 'mine' : 'theirs');
+                    row.dataset.messageId = String(item.id || 0);
+
+                    var stack = document.createElement('div');
+                    stack.className = 'message-stack';
+
+                    var bubble = document.createElement('div');
+                    bubble.className = 'message-bubble';
+
+                    var p = document.createElement('p');
+                    p.textContent = item.text || '';
+                    bubble.appendChild(p);
+
+                    var small = document.createElement('small');
+                    small.textContent = formatDate(item.created_at || '');
+                    bubble.appendChild(small);
+
+                    if (item.is_edited) {
+                        bubble.classList.add('is-edited');
+                    }
+
+                    if (item.is_mine) {
+                        var actions = document.createElement('div');
+                        actions.className = 'message-actions';
+
+                        var editButton = document.createElement('button');
+                        editButton.type = 'button';
+                        editButton.className = 'message-action-btn';
+                        editButton.textContent = 'Edit';
+                        editButton.addEventListener('click', function () {
+                            editMessage(item);
+                        });
+
+                        var deleteButton = document.createElement('button');
+                        deleteButton.type = 'button';
+                        deleteButton.className = 'message-action-btn danger';
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.addEventListener('click', function () {
+                            deleteMessage(item);
+                        });
+
+                        actions.appendChild(editButton);
+                        actions.appendChild(deleteButton);
+                        bubble.appendChild(actions);
+                    }
+
+                    stack.appendChild(bubble);
+                    row.appendChild(stack);
+                    messageList.appendChild(row);
+                });
+
+                if (options.forceBottom || nearBottom) {
+                    messageList.scrollTop = messageList.scrollHeight;
+                } else {
+                    var delta = messageList.scrollHeight - prevHeight;
+                    messageList.scrollTop = Math.max(0, prevTop + delta);
+                }
+            }
+
+            function ensureThread() {
+                if (threadId > 0) {
+                    return Promise.resolve(threadId);
+                }
+
+                if (farmerId <= 0) {
+                    return Promise.reject(new Error('Invalid conversation'));
+                }
+
+                return fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'get_or_create_thread',
+                        participant_id: farmerId
+                    })
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok || Number(data.thread_id || 0) <= 0) {
+                            throw new Error((data && data.message) ? data.message : 'Could not open conversation');
+                        }
+
+                        threadId = Number(data.thread_id || 0);
+                        var next = new URL(window.location.href);
+                        next.searchParams.set('thread_id', String(threadId));
+                        window.history.replaceState({}, '', next.toString());
+                        return threadId;
+                    });
+            }
+
+            function loadMessages(forceBottom) {
+                if (threadId <= 0) {
+                    return;
+                }
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'get_messages',
+                        thread_id: threadId
+                    })
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            conversationState.textContent = (data && data.message) ? data.message : 'Failed to load messages';
+                            return;
+                        }
+
+                        var participant = data.participant || {};
+                        participantName.textContent = participant.name || 'Farmer';
+                        participantLocation.textContent = participant.location || 'Location not set';
+                        participantAvatar.src = participant.image || FALLBACK_AVATAR;
+                        participantAvatar.onerror = function () { participantAvatar.src = FALLBACK_AVATAR; };
+
+                        renderMessages(Array.isArray(data.messages) ? data.messages : [], {
+                            forceBottom: forceBottom === true
+                        });
+                    })
+                    .catch(function () {
+                        conversationState.textContent = 'Network error while loading messages';
+                    });
+            }
+
+            function sendMessage() {
+                var text = String(msgInput.value || '').trim();
+                if (!text) {
+                    return;
+                }
+
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'Sending...';
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'send_message',
+                        thread_id: threadId,
+                        participant_id: farmerId,
+                        message: text
+                    })
+                })
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            conversationState.textContent = (data && data.message) ? data.message : 'Failed to send message';
+                            return;
+                        }
+
+                        if (Number(data.thread_id || 0) > 0 && threadId <= 0) {
+                            threadId = Number(data.thread_id || 0);
+                        }
+
+                        msgInput.value = '';
+                        loadMessages(true);
+                    })
+                    .catch(function () {
+                        conversationState.textContent = 'Network error while sending message';
+                    })
+                    .finally(function () {
+                        sendBtn.disabled = false;
+                        sendBtn.textContent = 'Send';
+                    });
+            }
+
+            function requestMessageAction(payload, successText) {
+                return fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            throw new Error((data && data.message) ? data.message : 'Request failed');
+                        }
+
+                        conversationState.textContent = successText;
+                        loadMessages(false);
+                        return data;
+                    });
+            }
+
+            function editMessage(item) {
+                var nextText = window.prompt('Edit your message', String(item.text || ''));
+                if (nextText === null) {
+                    return;
+                }
+
+                nextText = String(nextText || '').trim();
+                if (!nextText) {
+                    conversationState.textContent = 'Message cannot be empty';
+                    return;
+                }
+
+                requestMessageAction({
+                    action: 'edit_message',
+                    message_id: Number(item.id || 0),
+                    message: nextText
+                }, 'Message updated successfully')
+                    .catch(function (error) {
+                        conversationState.textContent = error && error.message ? error.message : 'Failed to update message';
+                    });
+            }
+
+            function deleteMessage(item) {
+                if (!window.confirm('Delete this message?')) {
+                    return;
+                }
+
+                requestMessageAction({
+                    action: 'delete_message',
+                    message_id: Number(item.id || 0)
+                }, 'Message deleted successfully')
+                    .catch(function (error) {
+                        conversationState.textContent = error && error.message ? error.message : 'Failed to delete message';
+                    });
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            msgInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            ensureThread()
+                .then(function () {
+                    loadMessages(true);
+                    window.setInterval(loadMessages, 4000);
+                })
+                .catch(function (err) {
+                    conversationState.textContent = err && err.message ? err.message : 'Failed to open conversation';
+                    sendBtn.disabled = true;
+                    msgInput.disabled = true;
+                });
+        })();
+    </script>
+</body>
+
+</html>

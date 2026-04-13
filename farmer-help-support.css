@@ -1,0 +1,73 @@
+.help-main {
+  padding-top: 82px;
+}
+
+.help-title {
+  font-size: 2.2rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.help-title span {
+  font-weight: 800;
+}
+
+.help-subtitle {
+  color: #dbe3d7;
+  font-size: 1.1rem;
+  margin-bottom: 14px;
+}
+
+.help-form {
+  width: min(620px, 92%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.help-form textarea {
+  width: 100%;
+  min-height: 132px;
+  resize: vertical;
+  border: 0;
+  border-radius: 6px;
+  background: #efefef;
+  color: #111;
+  padding: 14px 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.help-form textarea::placeholder {
+  color: #9ca1ad;
+}
+
+.help-form button {
+  border: 0;
+  border-radius: 10px;
+  height: 40px;
+  width: 240px;
+  background: #171b28;
+  color: #e8ece5;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  .help-main {
+    padding-top: 20px;
+  }
+
+  .help-title {
+    font-size: 1.8rem;
+  }
+
+  .help-subtitle {
+    font-size: 1rem;
+  }
+
+  .help-form button {
+    width: 100%;
+  }
+}

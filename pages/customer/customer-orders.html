@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Orders - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/customer-account.css" />
+    <link rel="stylesheet" href="../../assets/css/customer-orders.css" />
+</head>
+
+<body>
+    <main class="account-page">
+        <aside class="account-sidebar">
+            <div class="sidebar-top">
+                <img id="profileImage" class="profile-image" src="../../figma/images (2).jpg" alt="Customer profile" />
+                <h2 id="profileName" class="profile-name">Customer</h2>
+                <p id="profileLocation" class="profile-location">Location not set</p>
+
+                <nav class="sidebar-nav" aria-label="Customer account menu">
+                    <a href="customer-account.html" class="nav-item">Account Info</a>
+                    <a href="customer-orders.html" class="nav-item active">Orders</a>
+                    <a href="#" class="nav-item">Notifications</a>
+                    <a href="customer-feedback.html" class="nav-item">Feedback</a>
+                </nav>
+            </div>
+
+            <a href="../../logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="account-content orders-content">
+            <div class="orders-topbar">
+                <div class="quick-icons" aria-hidden="true">
+                    <span class="icon-pill">&#128269;</span>
+                    <span class="icon-pill">&#128722;</span>
+                    <span class="icon-pill">&#128100;</span>
+                </div>
+            </div>
+
+            <header class="content-head orders-head">
+                <h1>Order <span>History</span></h1>
+                <div class="order-summary">
+                    <span id="processingCount" class="summary-pill">Processing: 0</span>
+                    <span id="refundCount" class="summary-pill">Refund/Return: 0</span>
+                    <span id="completedCount" class="summary-pill">Completed: 0</span>
+                </div>
+            </header>
+
+            <div class="order-filters" role="group" aria-label="Order filter">
+                <button type="button" class="filter-chip active" data-filter="all">All</button>
+                <button type="button" class="filter-chip" data-filter="to_receive">To Receive</button>
+                <button type="button" class="filter-chip" data-filter="refund_return">Refund/Return</button>
+                <button type="button" class="filter-chip" data-filter="completed">Completed</button>
+                <button type="button" class="filter-chip" data-filter="cancelled">Cancelled</button>
+            </div>
+
+            <section class="orders-card">
+                <div class="orders-card-head">
+                    <h3>Latest Orders</h3>
+                    <div class="orders-tools">
+                        <button type="button">Customize</button>
+                        <button type="button">Filter</button>
+                        <button type="button">Export</button>
+                    </div>
+                </div>
+
+                <div class="orders-table-wrap">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Order Date</th>
+                                <th>Price</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr>
+                                <td colspan="6">Loading orders...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        (function setupCustomerOrders() {
+            var PROFILE_API_URL = '../../customer-checkout-data.php';
+            var ORDERS_API_URL = '../../customer-orders-data.php';
+            var FALLBACK_IMAGE = '../../figma/images (2).jpg';
+            var activeFilter = 'all';
+
+            var profileImage = document.getElementById('profileImage');
+            var profileName = document.getElementById('profileName');
+            var profileLocation = document.getElementById('profileLocation');
+            var processingCount = document.getElementById('processingCount');
+            var refundCount = document.getElementById('refundCount');
+            var completedCount = document.getElementById('completedCount');
+            var ordersTableBody = document.getElementById('ordersTableBody');
+            var filterButtons = Array.prototype.slice.call(document.querySelectorAll('.filter-chip'));
+
+            function formatDate(raw) {
+                if (!raw) {
+                    return '-';
+                }
+
+                var date = new Date(raw);
+                if (Number.isNaN(date.getTime())) {
+                    return raw;
+                }
+
+                return date.toLocaleString([], {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            }
+
+            function setActiveFilter(nextFilter) {
+                activeFilter = nextFilter;
+                filterButtons.forEach(function (button) {
+                    button.classList.toggle('active', button.dataset.filter === nextFilter);
+                });
+            }
+
+            function renderOrders(items) {
+                ordersTableBody.innerHTML = '';
+
+                if (!Array.isArray(items) || !items.length) {
+                    var emptyRow = document.createElement('tr');
+                    var cell = document.createElement('td');
+                    cell.colSpan = 6;
+                    cell.textContent = 'No orders found.';
+                    emptyRow.appendChild(cell);
+                    ordersTableBody.appendChild(emptyRow);
+                    return;
+                }
+
+                items.forEach(function (item) {
+                    var row = document.createElement('tr');
+
+                    var orderCode = document.createElement('td');
+                    orderCode.textContent = '#' + (item.order_code || '-');
+
+                    var product = document.createElement('td');
+                    product.textContent = (item.product_name || 'Product') + ' (' + String(item.qty || 0) + ')';
+
+                    var orderDate = document.createElement('td');
+                    orderDate.textContent = formatDate(item.placed_at || '');
+
+                    var price = document.createElement('td');
+                    price.textContent = '৳' + Number(item.line_total || 0).toFixed(2);
+
+                    var payment = document.createElement('td');
+                    payment.textContent = item.payment_method || 'Cash';
+
+                    var status = document.createElement('td');
+                    status.textContent = item.status_label || 'Processing';
+                    status.className = 'status-cell ' + (item.status_class || 'processing');
+
+                    row.appendChild(orderCode);
+                    row.appendChild(product);
+                    row.appendChild(orderDate);
+                    row.appendChild(price);
+                    row.appendChild(payment);
+                    row.appendChild(status);
+                    ordersTableBody.appendChild(row);
+                });
+            }
+
+            function renderSummary(summary) {
+                var processing = Number((summary && summary.processing_count) || 0);
+                var refund = Number((summary && summary.refund_count) || 0);
+                var completed = Number((summary && summary.completed_count) || 0);
+                processingCount.textContent = 'Processing: ' + String(processing);
+                refundCount.textContent = 'Refund/Return: ' + String(refund);
+                completedCount.textContent = 'Completed: ' + String(completed);
+            }
+
+            function loadProfile() {
+                fetch(PROFILE_API_URL, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            return;
+                        }
+
+                        profileName.textContent = data.full_name || 'Customer';
+                        profileLocation.textContent = data.address || 'Location not set';
+                        profileImage.src = data.profile_image || FALLBACK_IMAGE;
+                        profileImage.onerror = function () {
+                            profileImage.src = FALLBACK_IMAGE;
+                        };
+                    });
+            }
+
+            function loadOrders() {
+                fetch(ORDERS_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        filter: activeFilter
+                    })
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data) {
+                            return;
+                        }
+
+                        if (!data.ok) {
+                            renderOrders([]);
+                            return;
+                        }
+
+                        renderSummary(data.summary || {});
+                        renderOrders(Array.isArray(data.items) ? data.items : []);
+                    })
+                    .catch(function () {
+                        renderOrders([]);
+                    });
+            }
+
+            filterButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    setActiveFilter(button.dataset.filter || 'all');
+                    loadOrders();
+                });
+            });
+
+            loadProfile();
+            loadOrders();
+        })();
+    </script>
+</body>
+
+</html>

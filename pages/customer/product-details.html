@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Details - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/landing.css" />
+    <link rel="stylesheet" href="../../assets/css/customer-product-details.css" />
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="nav-inner">
+            <a href="../../index.html" class="logo">
+                <div class="logo-icon">
+                    <img src="../../image/WhatsApp Image 2026-03-14 at 11.29.15 PM.jpeg" alt="AgroMarket logo" />
+                </div>
+                <span class="logo-text">AgroMarket</span>
+            </a>
+
+            <nav class="nav-links">
+                <a href="../../index.html">Home</a>
+                <a href="customer-marketplace.html">Products</a>
+                <a href="customer-marketplace.html#nearbySection">Near You</a>
+                <a href="#">Contact</a>
+                <a href="#">Support</a>
+            </nav>
+
+            <div class="nav-auth">
+                <a href="view-cart.html" class="nav-cart" aria-label="Cart">
+                    <span class="nav-cart-icon" aria-hidden="true">&#128722;</span>
+                    <span id="navCartCount" class="nav-cart-count">0</span>
+                </a>
+                <a href="customer-account.html" class="btn-login">My Account</a>
+                <a href="../../logout.php" class="btn-register">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="details-page-main">
+        <section class="details-panel" aria-live="polite">
+            <a href="customer-marketplace.html" class="back-link" aria-label="Back to marketplace">&#8592;</a>
+
+            <div class="details-layout">
+                <div class="visual-col">
+                    <div class="behind-block"></div>
+                    <div class="image-card">
+                        <img id="productImage" src="../../figma/images (2).jpg" alt="Product image" />
+                        <p id="pricePerKilo">৳0 per kilo</p>
+                        <p id="pricingStatus" class="pricing-status"></p>
+                    </div>
+                </div>
+
+                <div class="main-info-col">
+                    <div class="farmer-head">
+                        <img id="farmerImage" src="../../figma/images (5).jpg" alt="Farmer image" />
+                        <div>
+                            <h3 id="farmerName">Local Farmer</h3>
+                            <p id="farmerLocation">Location not set</p>
+                        </div>
+                    </div>
+
+                    <p id="productCategory" class="category-tag">CATEGORY</p>
+                    <h1 id="productName">Product</h1>
+
+                    <div class="qty-row" aria-label="Quantity">
+                        <button id="minusQty" type="button">-</button>
+                        <span id="qtyValue">1</span>
+                        <button id="plusQty" type="button">+</button>
+                    </div>
+
+                    <button id="addToCartBtn" type="button" class="add-cart-main">Add to cart</button>
+                    <a id="messageFarmerLink" href="customer-feedback.html" class="message-farmer-link">Message
+                        farmer</a>
+                </div>
+
+                <div class="divider-arrow" aria-hidden="true">&#8250;</div>
+
+                <div class="extra-info-col">
+                    <div class="info-block">
+                        <h2>Other Information</h2>
+                        <p><span>Stock Status:</span> <strong id="stockStatus">Available (0)</strong></p>
+                    </div>
+
+                    <div class="info-block">
+                        <h2>Shipping Information</h2>
+                        <p><span>Courier:</span> 1-2 days, free shipping</p>
+                    </div>
+                </div>
+            </div>
+
+            <p id="detailsMessage" class="details-message"></p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <a href="../../index.html" class="footer-logo" aria-label="AgroMarket Home">
+                    <img src="../../image/WhatsApp Image 2026-03-14 at 11.29.15 PM.jpeg" alt="AgroMarket logo" />
+                    <span class="footer-logo-text">AgroMarket</span>
+                </a>
+                <p>Discover local freshness, support nearby farmers, and enjoy high-quality food from trusted
+                    producers in your community.</p>
+            </div>
+
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <a href="../../index.html">Home</a>
+                <a href="#">About</a>
+                <a href="#">Blog</a>
+                <a href="#">Contact</a>
+            </div>
+
+            <div class="footer-links">
+                <h4>Support</h4>
+                <a href="#">FAQ</a>
+                <a href="#">Terms &amp; Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Help Center</a>
+            </div>
+
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                <p>Email: agromarket@gmail.com</p>
+                <p>Phone: +01603294161</p>
+                <p>Sayednagar, B-block, Matikail, Dhaka</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>Copyright 2026 AgroMarket. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        (function setupProductDetails() {
+            var CART_STORAGE_KEY = 'agromarket_cart_v1';
+            var API_URL = '../../customer-products-handler.php';
+            var FALLBACK_PRODUCT = '../../figma/images (2).jpg';
+            var FALLBACK_FARMER = '../../figma/images (5).jpg';
+
+            var productImage = document.getElementById('productImage');
+            var pricePerKilo = document.getElementById('pricePerKilo');
+            var pricingStatus = document.getElementById('pricingStatus');
+            var farmerImage = document.getElementById('farmerImage');
+            var farmerName = document.getElementById('farmerName');
+            var farmerLocation = document.getElementById('farmerLocation');
+            var productCategory = document.getElementById('productCategory');
+            var productName = document.getElementById('productName');
+            var stockStatus = document.getElementById('stockStatus');
+            var detailsMessage = document.getElementById('detailsMessage');
+            var qtyValue = document.getElementById('qtyValue');
+            var minusQty = document.getElementById('minusQty');
+            var plusQty = document.getElementById('plusQty');
+            var addToCartBtn = document.getElementById('addToCartBtn');
+            var messageFarmerLink = document.getElementById('messageFarmerLink');
+            var navCartCount = document.getElementById('navCartCount');
+
+            var qty = 1;
+            var productPrice = 0;
+            var currentProduct = null;
+
+            function readCartItems() {
+                try {
+                    var raw = localStorage.getItem(CART_STORAGE_KEY);
+                    var parsed = raw ? JSON.parse(raw) : [];
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (_) {
+                    return [];
+                }
+            }
+
+            function writeCartItems(items) {
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+            }
+
+            function updateCartCount() {
+                var count = readCartItems().reduce(function (sum, item) {
+                    return sum + Number(item.qty || 0);
+                }, 0);
+                navCartCount.textContent = String(count);
+            }
+
+            function updateQty() {
+                qtyValue.textContent = String(qty);
+                var total = qty * productPrice;
+                addToCartBtn.textContent = 'Add to cart (৳' + total.toFixed(2) + ')';
+            }
+
+            addToCartBtn.addEventListener('click', function () {
+                if (!currentProduct || Number(currentProduct.id || 0) <= 0) {
+                    detailsMessage.textContent = 'Product তথ্য load হয়নি।';
+                    detailsMessage.classList.add('error');
+                    return;
+                }
+
+                var pid = Number(currentProduct.id || 0);
+                var cartItems = readCartItems();
+                var existing = null;
+
+                for (var i = 0; i < cartItems.length; i += 1) {
+                    if (Number(cartItems[i].id || 0) === pid) {
+                        existing = cartItems[i];
+                        break;
+                    }
+                }
+
+                if (existing) {
+                    existing.qty = Number(existing.qty || 0) + qty;
+                } else {
+                    cartItems.push({
+                        id: pid,
+                        name: currentProduct.name || 'Product',
+                        price: Number(currentProduct.price || 0),
+                        image_path: currentProduct.image_path || FALLBACK_PRODUCT,
+                        qty: qty,
+                    });
+                }
+
+                writeCartItems(cartItems);
+                updateCartCount();
+                detailsMessage.textContent = 'Product cart এ add হয়েছে।';
+                detailsMessage.classList.remove('error');
+            });
+
+            minusQty.addEventListener('click', function () {
+                if (qty > 1) {
+                    qty -= 1;
+                    updateQty();
+                }
+            });
+
+            plusQty.addEventListener('click', function () {
+                qty += 1;
+                updateQty();
+            });
+
+            var params = new URLSearchParams(window.location.search);
+            var productId = Number(params.get('id') || 0);
+
+            if (productId <= 0) {
+                detailsMessage.textContent = 'Invalid product id.';
+                detailsMessage.classList.add('error');
+                return;
+            }
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    action: 'product_detail',
+                    product_id: productId
+                })
+            })
+                .then(function (response) {
+                    if (response.status === 401) {
+                        window.location.href = '../auth/Login.html?error=Please+login+first';
+                        return null;
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (!data) {
+                        return;
+                    }
+
+                    if (!data.success || !data.product) {
+                        detailsMessage.textContent = data.message || 'Product not found.';
+                        detailsMessage.classList.add('error');
+                        return;
+                    }
+
+                    var product = data.product;
+                    currentProduct = product;
+                    productPrice = Number(product.price || 0);
+
+                    productImage.src = product.image_path || FALLBACK_PRODUCT;
+                    productImage.onerror = function () { productImage.src = FALLBACK_PRODUCT; };
+                    pricePerKilo.textContent = '৳' + productPrice.toFixed(2) + ' per kilo';
+                    pricingStatus.textContent = product.pricing_label || 'Full Price';
+
+                    farmerImage.src = product.farmer_profile_image || FALLBACK_FARMER;
+                    farmerImage.onerror = function () { farmerImage.src = FALLBACK_FARMER; };
+                    farmerName.textContent = product.farmer_name || 'Local Farmer';
+                    farmerLocation.textContent = product.farmer_location || 'Location not set';
+
+                    if (Number(product.farmer_id || 0) > 0) {
+                        messageFarmerLink.href = 'message-conversation.html?farmer_id=' + encodeURIComponent(String(product.farmer_id || 0));
+                    } else {
+                        messageFarmerLink.href = 'customer-feedback.html';
+                    }
+
+                    productCategory.textContent = String(product.category || 'Uncategorized').toUpperCase();
+                    productName.textContent = product.name || 'Product';
+                    stockStatus.textContent = 'Available (' + String(product.stock || 0) + ')';
+
+                    updateQty();
+                    updateCartCount();
+                })
+                .catch(function () {
+                    detailsMessage.textContent = 'Network error while loading product details.';
+                    detailsMessage.classList.add('error');
+                });
+
+            window.addEventListener('storage', function (event) {
+                if (event.key === CART_STORAGE_KEY) {
+                    updateCartCount();
+                }
+            });
+
+            updateCartCount();
+        })();
+    </script>
+</body>
+
+</html>

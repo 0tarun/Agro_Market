@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farmer Account - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/farmer-dashboard.css" />
+    <link rel="stylesheet" href="../../assets/css/farmer-account.css" />
+</head>
+
+<body>
+    <main class="dashboard-page">
+        <aside class="sidebar">
+            <div>
+                <div class="profile-block">
+                    <img id="sidebarProfileImage" src="../../figma/images (5).jpg" alt="Farmer profile"
+                        class="profile-image" />
+                    <h2 id="sidebarProfileName" class="profile-name">My Farmer Account</h2>
+                    <p id="sidebarProfileLocation" class="profile-location">Profile Settings</p>
+                </div>
+
+                <nav class="menu" aria-label="Sidebar menu">
+                    <a href="farmer-dashboard.html" class="menu-item">
+                        <span class="menu-icon">&#9638;</span>
+                        Overview
+                    </a>
+                    <a href="farmer-products.html" class="menu-item">
+                        <span class="menu-icon">&#9635;</span>
+                        Products
+                    </a>
+                    <a href="farmer-orders.html" class="menu-item">
+                        <span class="menu-icon">&#9745;</span>
+                        Orders
+                    </a>
+                    <a href="farmer-feedback.html" class="menu-item">
+                        <span class="menu-icon">&#9993;</span>
+                        Feedback
+                    </a>
+                    <a href="farmer-help-support.html" class="menu-item">
+                        <span class="menu-icon">?</span>
+                        Help &amp; Support
+                    </a>
+                    <a href="farmer-account.html" class="menu-item active">
+                        <span class="menu-icon">&#9787;</span>
+                        Account
+                    </a>
+                </nav>
+            </div>
+
+            <a href="../../logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="main-panel account-main">
+            <header class="account-header">
+                <h1>Update Account</h1>
+                <p>Update your basic profile information here.</p>
+            </header>
+
+            <div id="toastMessage" class="toast-message" style="display:none;"></div>
+
+            <form class="account-form" action="../../update-farmer-account.php" method="post"
+                enctype="multipart/form-data">
+                <div class="field-grid">
+                    <div class="wide profile-preview-wrap">
+                        <img id="profilePreview" src="../../figma/images (5).jpg" alt="Profile preview"
+                            class="profile-preview" />
+                        <p id="profileName" class="profile-name-text">My Farmer Account</p>
+                    </div>
+
+                    <label>
+                        First Name
+                        <input id="firstName" type="text" name="first_name" placeholder="Enter first name"
+                            maxlength="60" required />
+                    </label>
+
+                    <label>
+                        Last Name
+                        <input id="lastName" type="text" name="last_name" placeholder="Enter last name" maxlength="60"
+                            required />
+                    </label>
+
+                    <label>
+                        Phone Number
+                        <input id="phone" type="tel" name="phone" placeholder="01XXXXXXXXX" maxlength="25" />
+                    </label>
+
+                    <label>
+                        Division
+                        <input id="division" type="text" name="division" placeholder="Enter division" maxlength="80" />
+                    </label>
+
+                    <label>
+                        District
+                        <input id="district" type="text" name="district" placeholder="Enter district" maxlength="80" />
+                    </label>
+
+                    <label>
+                        Email
+                        <input id="email" type="email" name="email" placeholder="Enter email" readonly
+                            class="readonly-field" />
+                    </label>
+
+                    <label class="wide">
+                        Street, Village, Thana, Union
+                        <input id="addressLine" type="text" name="address_line" placeholder="Enter full address"
+                            maxlength="255" />
+                    </label>
+
+                    <label class="wide upload-field">
+                        Profile Image
+                        <input id="profileUpload" type="file" name="profile_image"
+                            accept="image/jpeg,image/png,image/webp" />
+                        <small id="fileName">No image selected</small>
+                    </label>
+                </div>
+
+                <button type="submit" class="update-btn">Save Changes</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        (function setupAccountPage() {
+            var profileCacheKey = 'farmerProfileCache';
+            var params = new URLSearchParams(window.location.search);
+            var error = params.get('error');
+            var success = params.get('success');
+
+            var fileInput = document.getElementById('profileUpload');
+            var fileName = document.getElementById('fileName');
+            var firstName = document.getElementById('firstName');
+            var lastName = document.getElementById('lastName');
+            var phone = document.getElementById('phone');
+            var division = document.getElementById('division');
+            var district = document.getElementById('district');
+            var addressLine = document.getElementById('addressLine');
+            var profilePreview = document.getElementById('profilePreview');
+            var profileName = document.getElementById('profileName');
+            var sidebarImg = document.getElementById('sidebarProfileImage');
+            var sidebarName = document.getElementById('sidebarProfileName');
+            var sidebarLocation = document.getElementById('sidebarProfileLocation');
+
+            function resolveBasePath() {
+                var parts = window.location.pathname.split('/').filter(Boolean);
+                if (parts.length > 0 && parts[0].indexOf('.') === -1) {
+                    return '/' + parts[0];
+                }
+
+                return '';
+            }
+
+            function normalizeProfileImage(url) {
+                var raw = (url || '').toString().trim();
+                var basePath = resolveBasePath();
+
+                if (!raw) {
+                    return (basePath || '') + '/figma/images (5).jpg';
+                }
+
+                if (/^(https?:)?\/\//i.test(raw) || raw.indexOf('data:') === 0) {
+                    return raw;
+                }
+
+                raw = raw.replace(/\\/g, '/');
+                if (raw.charAt(0) !== '/') {
+                    raw = '/' + raw.replace(/^\/+/, '');
+                }
+
+                if (basePath && raw.indexOf(basePath + '/') !== 0) {
+                    raw = basePath + raw;
+                }
+
+                return raw;
+            }
+
+            function getCachedProfile() {
+                try {
+                    var raw = sessionStorage.getItem(profileCacheKey);
+                    return raw ? JSON.parse(raw) : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function setCachedProfile(profile) {
+                try {
+                    sessionStorage.setItem(profileCacheKey, JSON.stringify(profile));
+                } catch (e) {
+                    // Ignore storage write errors.
+                }
+            }
+
+            function preloadImage(url) {
+                return new Promise(function (resolve, reject) {
+                    var probe = new Image();
+                    probe.onload = function () { resolve(url); };
+                    probe.onerror = function () { reject(new Error('Image load failed')); };
+                    probe.src = url;
+                });
+            }
+
+            function applyImageWithFallback(imgEl, desiredUrl) {
+                if (!imgEl) return;
+
+                var fallback = normalizeProfileImage('figma/images (5).jpg');
+                var target = normalizeProfileImage(desiredUrl);
+
+                if (imgEl.src === target) return;
+
+                preloadImage(target)
+                    .then(function () {
+                        imgEl.src = target;
+                    })
+                    .catch(function () {
+                        imgEl.src = fallback;
+                    });
+            }
+
+            function showToast(message, type) {
+                var toast = document.getElementById('toastMessage');
+                if (!toast) return;
+
+                toast.textContent = message;
+                toast.className = 'toast-message toast-' + type;
+                toast.style.display = 'block';
+                setTimeout(function () {
+                    toast.style.opacity = '0';
+                    setTimeout(function () {
+                        toast.style.display = 'none';
+                        toast.style.opacity = '1';
+                    }, 400);
+                }, 5000);
+            }
+
+            function applyProfile(profile) {
+                if (!profile) return;
+
+                applyImageWithFallback(profilePreview, profile.profile_image || '');
+                applyImageWithFallback(sidebarImg, profile.profile_image || '');
+                if (profileName && profile.full_name) profileName.textContent = profile.full_name;
+                if (sidebarName && profile.full_name) sidebarName.textContent = profile.full_name;
+                if (sidebarLocation && profile.location_text) sidebarLocation.textContent = profile.location_text;
+            }
+
+            applyProfile(getCachedProfile());
+
+            if (error) {
+                showToast(error.replace(/\+/g, ' '), 'error');
+            } else if (success) {
+                showToast(success.replace(/\+/g, ' '), 'success');
+            }
+
+            if (fileInput && fileName) {
+                fileInput.addEventListener('change', function () {
+                    if (fileInput.files && fileInput.files.length > 0) {
+                        fileName.textContent = fileInput.files[0].name;
+                        profilePreview.src = URL.createObjectURL(fileInput.files[0]);
+                    } else {
+                        fileName.textContent = 'No image selected';
+                    }
+                });
+            }
+
+            fetch('../../farmer-account-data.php', {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (!data || data.ok !== true) {
+                        if (data && data.redirect) {
+                            window.location.href = data.redirect;
+                        }
+                        return;
+                    }
+
+                    if (firstName) firstName.value = data.first_name || '';
+                    if (lastName) lastName.value = data.last_name || '';
+                    if (phone) phone.value = data.phone || '';
+                    if (division) division.value = data.division || '';
+                    if (district) district.value = data.district || '';
+                    if (addressLine) addressLine.value = data.address_line || '';
+
+                    var emailField = document.getElementById('email');
+                    if (emailField && data.email) emailField.value = data.email;
+
+                    var locationParts = [];
+                    if (data.district) locationParts.push(data.district);
+                    if (data.division) locationParts.push(data.division);
+
+                    var profile = {
+                        profile_image: data.profile_image || '',
+                        full_name: data.full_name || '',
+                        location_text: (locationParts.length > 0 ? locationParts.join(', ') : '')
+                    };
+
+                    applyProfile(profile);
+                    setCachedProfile(profile);
+                })
+                .catch(function () {
+                    // Keep form usable even if prefill request fails.
+                });
+        })();
+    </script>
+</body>
+
+</html>

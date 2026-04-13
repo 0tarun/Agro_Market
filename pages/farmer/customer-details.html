@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Details - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/farmer-dashboard.css" />
+    <link rel="stylesheet" href="../../assets/css/customer-details.css" />
+</head>
+
+<body>
+    <main class="dashboard-page">
+        <aside class="sidebar">
+            <div>
+                <div class="profile-block">
+                    <img id="sidebarProfileImage" src="../../figma/images (5).jpg" alt="Farmer profile"
+                        class="profile-image" />
+                    <h2 id="sidebarProfileName" class="profile-name">My Farmer Account</h2>
+                    <p id="sidebarProfileLocation" class="profile-location">Loading...</p>
+                </div>
+
+                <nav class="menu" aria-label="Sidebar menu">
+                    <a href="farmer-dashboard.html" class="menu-item">
+                        <span class="menu-icon">&#9638;</span>
+                        Overview
+                    </a>
+                    <a href="farmer-products.html" class="menu-item">
+                        <span class="menu-icon">&#9635;</span>
+                        Products
+                    </a>
+                    <a href="farmer-orders.html" class="menu-item active">
+                        <span class="menu-icon">&#9745;</span>
+                        Orders
+                    </a>
+                    <a href="farmer-feedback.html" class="menu-item">
+                        <span class="menu-icon">&#9993;</span>
+                        Feedback
+                    </a>
+                    <a href="farmer-help-support.html" class="menu-item">
+                        <span class="menu-icon">?</span>
+                        Help and Support
+                    </a>
+                    <a href="farmer-account.html" class="menu-item">
+                        <span class="menu-icon">&#9787;</span>
+                        Account
+                    </a>
+                </nav>
+            </div>
+
+            <a href="../../logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="main-panel customer-main">
+            <section class="panel consumer-card">
+                <h1>Consumer</h1>
+                <div class="consumer-row">
+                    <div class="consumer-left">
+                        <img id="consumerAvatar" src="../../figma/images (2).jpg" alt="Customer"
+                            class="consumer-avatar" />
+                        <div>
+                            <p id="consumerName" class="consumer-name">Consumer</p>
+                            <p id="consumerMeta" class="consumer-meta">Loading...</p>
+                        </div>
+                    </div>
+                    <button id="consumerLocationBtn" class="location-btn" type="button">Location: Loading...</button>
+                </div>
+            </section>
+
+            <section class="panel latest-orders-card">
+                <div class="order-head">
+                    <h3>Latest Orders</h3>
+                    <div class="order-tools">
+                        <button type="button">Customize</button>
+                        <button type="button">Filter</button>
+                        <button type="button">Export</button>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Order Date</th>
+                                <th>Price</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Method</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="8" id="ordersLoadingCell">Loading orders...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+        </section>
+    </main>
+    <script src="../../assets/js/farmer-sidebar.js"></script>
+    <script>
+        (function setupCustomerDetails() {
+            var API_URL = '../../farmer-order-details-data.php';
+            var ACTION_API_URL = '../../farmer-order-action.php';
+            var FALLBACK_AVATAR = '../../figma/images (2).jpg';
+            var ORDER_ID_STORAGE_KEY = 'agromarket_farmer_customer_order_id_v1';
+
+            var consumerAvatar = document.getElementById('consumerAvatar');
+            var consumerName = document.getElementById('consumerName');
+            var consumerMeta = document.getElementById('consumerMeta');
+            var consumerLocationBtn = document.getElementById('consumerLocationBtn');
+            var tableBody = document.querySelector('.table-wrap tbody');
+            var ordersLoadingCell = document.getElementById('ordersLoadingCell');
+
+            function formatDate(raw) {
+                if (!raw) {
+                    return '-';
+                }
+
+                var date = new Date(raw);
+                if (Number.isNaN(date.getTime())) {
+                    return raw;
+                }
+
+                return date.toLocaleString([], {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            }
+
+            function renderOrders(rows) {
+                tableBody.innerHTML = '';
+
+                if (!Array.isArray(rows) || !rows.length) {
+                    var emptyRow = document.createElement('tr');
+                    var emptyCell = document.createElement('td');
+                    emptyCell.colSpan = 8;
+                    emptyCell.textContent = 'No orders available for this consumer.';
+                    emptyRow.appendChild(emptyCell);
+                    tableBody.appendChild(emptyRow);
+                    return;
+                }
+
+                rows.forEach(function (item) {
+                    var tr = document.createElement('tr');
+
+                    var code = document.createElement('td');
+                    code.textContent = '#' + (item.order_code || '-');
+                    tr.appendChild(code);
+
+                    var product = document.createElement('td');
+                    product.textContent = (item.product || '-') + '(' + String(item.qty || 0) + ')';
+                    tr.appendChild(product);
+
+                    var orderDate = document.createElement('td');
+                    orderDate.textContent = formatDate(item.order_date || '');
+                    tr.appendChild(orderDate);
+
+                    var price = document.createElement('td');
+                    price.textContent = Number(item.price || 0).toFixed(2);
+                    tr.appendChild(price);
+
+                    var payment = document.createElement('td');
+                    payment.textContent = item.payment || 'Pending';
+                    tr.appendChild(payment);
+
+                    var status = document.createElement('td');
+                    status.textContent = item.status_label || 'Processing';
+                    status.className = item.status_class || 'processing';
+                    tr.appendChild(status);
+
+                    var method = document.createElement('td');
+                    method.textContent = item.method || 'Cash';
+                    tr.appendChild(method);
+
+                    var action = document.createElement('td');
+                    action.className = 'action-cell';
+                    var actionButtons = document.createElement('div');
+                    actionButtons.className = 'action-buttons';
+                    var statusRaw = String(item.status_raw || '');
+                    if (statusRaw === 'pending') {
+                        var confirmBtn = document.createElement('button');
+                        confirmBtn.type = 'button';
+                        confirmBtn.className = 'decision-btn confirm-action-btn';
+                        confirmBtn.textContent = 'Confirm';
+                        confirmBtn.dataset.orderId = String(item.order_id || 0);
+                        confirmBtn.addEventListener('click', function () {
+                            submitOrderAction('confirm', confirmBtn, 'Order confirmed successfully', 'Confirm');
+                        });
+                        actionButtons.appendChild(confirmBtn);
+
+                        var declineBtn = document.createElement('button');
+                        declineBtn.type = 'button';
+                        declineBtn.className = 'decision-btn decline-action-btn';
+                        declineBtn.textContent = 'Decline';
+                        declineBtn.dataset.orderId = String(item.order_id || 0);
+                        declineBtn.addEventListener('click', function () {
+                            submitOrderAction('decline', declineBtn, 'Order declined successfully', 'Decline');
+                        });
+                        actionButtons.appendChild(declineBtn);
+                    } else if (statusRaw === 'to_receive') {
+                        var completeBtn = document.createElement('button');
+                        completeBtn.type = 'button';
+                        completeBtn.className = 'decision-btn complete-action-btn';
+                        completeBtn.textContent = 'Complete';
+                        completeBtn.dataset.orderId = String(item.order_id || 0);
+                        completeBtn.addEventListener('click', function () {
+                            submitOrderAction('complete', completeBtn, 'Order completed successfully', 'Complete');
+                        });
+                        actionButtons.appendChild(completeBtn);
+
+                        var refundBtn = document.createElement('button');
+                        refundBtn.type = 'button';
+                        refundBtn.className = 'decision-btn refund-action-btn';
+                        refundBtn.textContent = 'Refund';
+                        refundBtn.dataset.orderId = String(item.order_id || 0);
+                        refundBtn.addEventListener('click', function () {
+                            submitOrderAction('refund', refundBtn, 'Order marked as refund/return', 'Refund');
+                        });
+                        actionButtons.appendChild(refundBtn);
+                    } else if (statusRaw === 'completed') {
+                        var refundCompletedBtn = document.createElement('button');
+                        refundCompletedBtn.type = 'button';
+                        refundCompletedBtn.className = 'decision-btn refund-action-btn';
+                        refundCompletedBtn.textContent = 'Refund';
+                        refundCompletedBtn.dataset.orderId = String(item.order_id || 0);
+                        refundCompletedBtn.addEventListener('click', function () {
+                            submitOrderAction('refund', refundCompletedBtn, 'Order marked as refund/return', 'Refund');
+                        });
+                        actionButtons.appendChild(refundCompletedBtn);
+                    } else {
+                        action.textContent = item.status_label || '-';
+                    }
+
+                    if (actionButtons.children.length > 0) {
+                        action.appendChild(actionButtons);
+                    }
+                    tr.appendChild(action);
+
+                    tableBody.appendChild(tr);
+                });
+            }
+
+            function loadDetails() {
+                fetch(API_URL + '?order_id=' + encodeURIComponent(String(orderId)), {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || data.ok !== true) {
+                            consumerMeta.textContent = (data && data.message) ? data.message : 'Failed to load order details';
+                            renderOrders([]);
+                            return;
+                        }
+
+                        var consumer = data.consumer || {};
+                        try {
+                            sessionStorage.setItem(ORDER_ID_STORAGE_KEY, String(orderId));
+                            sessionStorage.setItem(ORDER_ID_STORAGE_KEY + '_consumer', JSON.stringify(consumer));
+                            sessionStorage.setItem(ORDER_ID_STORAGE_KEY + '_orders', JSON.stringify(Array.isArray(data.latest_orders) ? data.latest_orders : []));
+                        } catch (_) {
+                            // Ignore storage failures and continue rendering.
+                        }
+
+                        consumerAvatar.src = consumer.profile_image || FALLBACK_AVATAR;
+                        consumerAvatar.onerror = function () { consumerAvatar.src = FALLBACK_AVATAR; };
+                        consumerName.textContent = consumer.name || 'Consumer';
+                        consumerMeta.textContent = consumer.meta || 'Order details';
+                        consumerLocationBtn.textContent = 'Location: ' + (consumer.address || 'Location not set');
+
+                        renderOrders(Array.isArray(data.latest_orders) ? data.latest_orders : []);
+                    })
+                    .catch(function () {
+                        consumerMeta.textContent = 'Network error while loading order details';
+                        renderOrders([]);
+                    });
+            }
+
+            function submitOrderAction(actionName, button, successFallbackMessage, resetLabel) {
+                var currentOrderId = Number(button.dataset.orderId || 0);
+                if (currentOrderId <= 0) {
+                    return;
+                }
+
+                button.disabled = true;
+                button.textContent = 'Saving...';
+
+                fetch(ACTION_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: actionName,
+                        order_id: currentOrderId
+                    })
+                })
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            button.disabled = false;
+                            button.textContent = resetLabel;
+                            consumerMeta.textContent = (data && data.message) ? data.message : ('Failed to ' + actionName + ' order');
+                            return;
+                        }
+
+                        consumerMeta.textContent = data.message || successFallbackMessage;
+                        loadDetails();
+                    })
+                    .catch(function () {
+                        button.disabled = false;
+                        button.textContent = resetLabel;
+                        consumerMeta.textContent = 'Network error while updating order';
+                    });
+            }
+
+            var params = new URLSearchParams(window.location.search);
+            var orderId = Number(params.get('order_id') || 0);
+
+            if (orderId <= 0) {
+                orderId = Number(sessionStorage.getItem(ORDER_ID_STORAGE_KEY) || 0);
+            }
+
+            if (orderId <= 0) {
+                consumerMeta.textContent = 'Invalid order id';
+                renderOrders([]);
+                return;
+            }
+
+            try {
+                sessionStorage.setItem(ORDER_ID_STORAGE_KEY, String(orderId));
+            } catch (_) {
+                // Ignore storage failures.
+            }
+
+            loadDetails();
+        })();
+    </script>
+</body>
+
+</html>

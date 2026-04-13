@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Agromarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+
+<body>
+
+    <main class="page">
+        <section class="left-panel">
+            <div class="logo-wrap">
+                <img class="logo-image" src="../../image/WhatsApp Image 2026-03-14 at 11.29.15 PM.jpeg"
+                    alt="Agromarket Logo">
+                <p class="logo-label">AGROMARKET</p>
+            </div>
+
+            <h1 class="title">Login</h1>
+            <p class="subtitle">Enter your account details</p>
+
+            <div id="authMessage" class="auth-message" style="display:none;" role="alert"></div>
+
+            <form class="form" action="../../login.php" method="post">
+                <input class="field" type="email" name="email" placeholder="Enter your email" aria-label="Email"
+                    required>
+
+                <div class="password-row">
+                    <input class="field" type="password" name="password" placeholder="Enter your password"
+                        aria-label="Password" required>
+                </div>
+
+                <button class="login-btn" type="submit">Login</button>
+                <a class="forgot" href="#">Forgot Password?</a>
+            </form>
+
+            <div class="bottom-row">
+                <p>Don't have an account?</p>
+                <a class="signup-btn" href="Registration.html">Sign up</a>
+            </div>
+        </section>
+
+        <section class="right-panel">
+            <img class="right-image" src="https://earthagrichem.com/wp-content/uploads/2025/05/OUR-1024x1024.jpg"
+                alt="Right side image">
+        </section>
+    </main>
+
+    <style>
+        .auth-message {
+            max-width: 360px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        .auth-message.error {
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid rgba(231, 76, 60, 0.4);
+            color: #f5a8a0;
+        }
+        .auth-message.success {
+            background: rgba(39, 174, 96, 0.15);
+            border: 1px solid rgba(39, 174, 96, 0.4);
+            color: #a8f0c6;
+        }
+    </style>
+
+    <script>
+        (function showAuthMessage() {
+            var params = new URLSearchParams(window.location.search);
+            var error = params.get('error');
+            var success = params.get('success');
+            var msgEl = document.getElementById('authMessage');
+
+            if (error && msgEl) {
+                msgEl.textContent = decodeURIComponent(error.replace(/\+/g, ' '));
+                msgEl.className = 'auth-message error';
+                msgEl.style.display = 'block';
+            } else if (success && msgEl) {
+                msgEl.textContent = decodeURIComponent(success.replace(/\+/g, ' '));
+                msgEl.className = 'auth-message success';
+                msgEl.style.display = 'block';
+            }
+        })();
+    </script>
+</body>
+
+</html>

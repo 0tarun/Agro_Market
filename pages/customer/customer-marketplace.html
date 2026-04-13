@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Marketplace - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/landing.css" />
+    <link rel="stylesheet" href="../../assets/css/customer-marketplace.css" />
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="nav-inner">
+            <a href="../../index.html" class="logo">
+                <div class="logo-icon">
+                    <img src="../../image/WhatsApp Image 2026-03-14 at 11.29.15 PM.jpeg" alt="AgroMarket logo" />
+                </div>
+                <span class="logo-text">AgroMarket</span>
+            </a>
+
+            <nav class="nav-links">
+                <a href="../../index.html">Home</a>
+                <a href="#productsSection">Products</a>
+                <a href="#nearbySection">Near You</a>
+                <a href="#">Contact</a>
+                <a href="#">Support</a>
+            </nav>
+
+            <div class="nav-auth">
+                <a href="view-cart.html" class="nav-cart" aria-label="Cart">
+                    <span class="nav-cart-icon" aria-hidden="true">&#128722;</span>
+                    <span id="navCartCount" class="nav-cart-count">0</span>
+                </a>
+                <a href="customer-account.html" class="btn-login">My Account</a>
+                <a href="../../logout.php" class="btn-register">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="marketplace-main">
+        <section id="productsSection" class="products-area">
+            <div class="products-tools">
+                <label for="productSearchInput" class="sr-only">Search products</label>
+                <input id="productSearchInput" type="search" class="product-search-input"
+                    placeholder="Search product by name or category" />
+            </div>
+            <div id="categoryChips" class="category-chips" aria-label="Categories"></div>
+            <div id="productGrid" class="product-grid" aria-live="polite"></div>
+            <p id="emptyProducts" class="empty-products">No products available right now.</p>
+            <button id="seeMoreBtn" type="button" class="see-more-btn">See more</button>
+        </section>
+
+        <section id="nearbySection" class="nearby-area">
+            <h2>Explore markets <span>near you</span></h2>
+            <div class="map-card">
+                <iframe title="Nearby markets map"
+                    src="https://www.openstreetmap.org/export/embed.html?bbox=90.3651%2C23.7245%2C90.4520%2C23.8030&amp;layer=mapnik"
+                    loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </section>
+
+        <section class="trusted-farm-area" aria-labelledby="trustedFarmTitle">
+            <h2 id="trustedFarmTitle">Trusted Farm Markets</h2>
+            <div id="trustedFarmersGrid" class="trusted-farm-grid" aria-live="polite"></div>
+            <p id="trustedFarmersEmpty" class="trusted-farm-empty">No trusted farmers available right now.</p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <a href="../../index.html" class="footer-logo" aria-label="AgroMarket Home">
+                    <img src="../../image/WhatsApp Image 2026-03-14 at 11.29.15 PM.jpeg" alt="AgroMarket logo" />
+                    <span class="footer-logo-text">AgroMarket</span>
+                </a>
+                <p>Discover local freshness, support nearby farmers, and enjoy high-quality food from trusted
+                    producers in your community.</p>
+            </div>
+
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <a href="../../index.html">Home</a>
+                <a href="#">About</a>
+                <a href="#">Blog</a>
+                <a href="#">Contact</a>
+            </div>
+
+            <div class="footer-links">
+                <h4>Support</h4>
+                <a href="#">FAQ</a>
+                <a href="#">Terms &amp; Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Help Center</a>
+            </div>
+
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                <p>Email: agromarket@gmail.com</p>
+                <p>Phone: +01603294161</p>
+                <p>Sayednagar, B-block, Matikail, Dhaka</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>Copyright 2026 AgroMarket. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        (function setupCustomerMarketplace() {
+            var CART_STORAGE_KEY = 'agromarket_cart_v1';
+            var API_URL = '../../customer-products-handler.php';
+            var FALLBACK_IMAGE = '../../figma/images (2).jpg';
+            var FALLBACK_FARMER_IMAGE = '../../figma/images (5).jpg';
+            var activeCategory = 'All';
+            var currentRows = 4;
+            var searchText = '';
+            var productsCache = [];
+            var filteredProductsCache = [];
+
+            var chipsWrap = document.getElementById('categoryChips');
+            var productGrid = document.getElementById('productGrid');
+            var emptyProducts = document.getElementById('emptyProducts');
+            var seeMoreBtn = document.getElementById('seeMoreBtn');
+            var productSearchInput = document.getElementById('productSearchInput');
+            var navCartCount = document.getElementById('navCartCount');
+            var trustedFarmersGrid = document.getElementById('trustedFarmersGrid');
+            var trustedFarmersEmpty = document.getElementById('trustedFarmersEmpty');
+
+            function readCartItems() {
+                try {
+                    var raw = localStorage.getItem(CART_STORAGE_KEY);
+                    var parsed = raw ? JSON.parse(raw) : [];
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (_) {
+                    return [];
+                }
+            }
+
+            function updateCartCount() {
+                var count = readCartItems().reduce(function (sum, item) {
+                    return sum + Number(item.qty || 0);
+                }, 0);
+
+                if (navCartCount) {
+                    navCartCount.textContent = String(count);
+                }
+            }
+
+            function getGridColumns() {
+                var columnsText = window.getComputedStyle(productGrid).gridTemplateColumns || '';
+                if (!columnsText || columnsText === 'none') {
+                    return 1;
+                }
+
+                var columns = columnsText.trim().split(/\s+/).length;
+                return Math.max(1, columns);
+            }
+
+            function getVisibleCount() {
+                return getGridColumns() * currentRows;
+            }
+
+            function createChip(label) {
+                var button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'chip' + (label === activeCategory ? ' active' : '');
+                button.textContent = label;
+                button.addEventListener('click', function () {
+                    activeCategory = label;
+                    currentRows = 4;
+                    loadMarketplace();
+                });
+                return button;
+            }
+
+            function buildCard(product) {
+                var card = document.createElement('article');
+                card.className = 'product-card';
+
+                var imageWrap = document.createElement('div');
+                imageWrap.className = 'image-wrap';
+
+                var img = document.createElement('img');
+                img.src = product.image_path || FALLBACK_IMAGE;
+                img.alt = product.name || 'Product';
+                img.onerror = function () { img.src = FALLBACK_IMAGE; };
+                imageWrap.appendChild(img);
+
+                var title = document.createElement('h3');
+                title.textContent = product.name || 'Unknown Product';
+
+                var meta = document.createElement('div');
+                meta.className = 'card-meta';
+                meta.innerHTML =
+                    '<span>' + (product.category || 'Uncategorized') + '</span>' +
+                    '<span>৳' + Number(product.price || 0).toFixed(2) + '</span>' +
+                    '<span>' + (product.pricing_label || 'Full Price') + '</span>';
+
+                var footer = document.createElement('div');
+                footer.className = 'card-footer';
+                var stock = document.createElement('small');
+                stock.textContent = 'Stock: ' + String(product.stock || 0);
+                footer.appendChild(stock);
+
+                var actions = document.createElement('div');
+                actions.className = 'card-actions';
+
+                var checkoutBtn = document.createElement('button');
+                checkoutBtn.type = 'button';
+                checkoutBtn.className = 'checkout-btn';
+                checkoutBtn.textContent = 'Checkout';
+                checkoutBtn.addEventListener('click', function () {
+                    var pid = Number(product.id || 0);
+                    if (pid > 0) {
+                        window.location.href = 'product-details.html?id=' + encodeURIComponent(String(pid));
+                    }
+                });
+
+                actions.appendChild(checkoutBtn);
+
+                card.appendChild(imageWrap);
+                card.appendChild(title);
+                card.appendChild(meta);
+                card.appendChild(footer);
+                card.appendChild(actions);
+
+                return card;
+            }
+
+            function renderProducts() {
+                productGrid.innerHTML = '';
+
+                var visibleCount = getVisibleCount();
+                var visibleProducts = filteredProductsCache.slice(0, visibleCount);
+                if (!visibleProducts.length) {
+                    emptyProducts.style.display = 'block';
+                    seeMoreBtn.style.display = 'none';
+                    return;
+                }
+
+                emptyProducts.style.display = 'none';
+
+                visibleProducts.forEach(function (product) {
+                    productGrid.appendChild(buildCard(product));
+                });
+
+                seeMoreBtn.style.display = filteredProductsCache.length > visibleCount ? 'inline-flex' : 'none';
+            }
+
+            function applyProductFilters() {
+                var query = searchText.toLowerCase();
+
+                filteredProductsCache = productsCache.filter(function (product) {
+                    if (!query) {
+                        return true;
+                    }
+
+                    var name = String(product.name || '').toLowerCase();
+                    var category = String(product.category || '').toLowerCase();
+                    return name.indexOf(query) !== -1 || category.indexOf(query) !== -1;
+                });
+
+                renderProducts();
+            }
+
+            function renderChips(categories) {
+                chipsWrap.innerHTML = '';
+                categories.forEach(function (categoryName) {
+                    chipsWrap.appendChild(createChip(categoryName));
+                });
+            }
+
+            function buildFarmerCard(farmer) {
+                var item = document.createElement('article');
+                item.className = 'trusted-farmer-item';
+
+                var avatar = document.createElement('img');
+                avatar.className = 'trusted-farmer-avatar';
+                avatar.src = farmer.image_path || FALLBACK_FARMER_IMAGE;
+                avatar.alt = farmer.name || 'Farmer';
+                avatar.onerror = function () { avatar.src = FALLBACK_FARMER_IMAGE; };
+
+                var info = document.createElement('div');
+                info.className = 'trusted-farmer-info';
+
+                var name = document.createElement('h3');
+                name.textContent = farmer.name || 'Local Farmer';
+
+                var location = document.createElement('p');
+                location.textContent = farmer.location || 'Location not set';
+
+                info.appendChild(name);
+                info.appendChild(location);
+                item.appendChild(avatar);
+                item.appendChild(info);
+                return item;
+            }
+
+            function renderTrustedFarmers(farmers) {
+                trustedFarmersGrid.innerHTML = '';
+                if (!Array.isArray(farmers) || !farmers.length) {
+                    trustedFarmersEmpty.style.display = 'block';
+                    return;
+                }
+
+                trustedFarmersEmpty.style.display = 'none';
+                farmers.forEach(function (farmer) {
+                    trustedFarmersGrid.appendChild(buildFarmerCard(farmer));
+                });
+            }
+
+            function loadMarketplace() {
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        category: activeCategory
+                    })
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data) {
+                            return;
+                        }
+
+                        if (!data.success) {
+                            emptyProducts.textContent = data.message || 'Unable to load products.';
+                            emptyProducts.style.display = 'block';
+                            productGrid.innerHTML = '';
+                            seeMoreBtn.style.display = 'none';
+                            return;
+                        }
+
+                        productsCache = Array.isArray(data.products) ? data.products : [];
+                        renderChips(Array.isArray(data.categories) ? data.categories : ['All']);
+                        applyProductFilters();
+                        renderTrustedFarmers(Array.isArray(data.trusted_farmers) ? data.trusted_farmers : []);
+                    })
+                    .catch(function () {
+                        emptyProducts.textContent = 'Network error while loading products.';
+                        emptyProducts.style.display = 'block';
+                        productGrid.innerHTML = '';
+                        seeMoreBtn.style.display = 'none';
+                        renderTrustedFarmers([]);
+                    });
+            }
+
+            seeMoreBtn.addEventListener('click', function () {
+                currentRows += 2;
+                renderProducts();
+            });
+
+            productSearchInput.addEventListener('input', function () {
+                searchText = productSearchInput.value.trim();
+                currentRows = 4;
+                applyProductFilters();
+            });
+
+            window.addEventListener('resize', function () {
+                renderProducts();
+            });
+
+            window.addEventListener('storage', function (event) {
+                if (event.key === CART_STORAGE_KEY) {
+                    updateCartCount();
+                }
+            });
+
+            updateCartCount();
+            loadMarketplace();
+        })();
+    </script>
+</body>
+
+</html>

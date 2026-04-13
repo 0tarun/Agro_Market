@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farmer Orders - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/farmer-dashboard.css" />
+    <link rel="stylesheet" href="../../assets/css/farmer-orders.css" />
+</head>
+
+<body>
+    <main class="dashboard-page">
+        <aside class="sidebar">
+            <div>
+                <div class="profile-block">
+                    <img id="sidebarProfileImage" src="../../figma/images (5).jpg" alt="Farmer profile"
+                        class="profile-image" />
+                    <h2 id="sidebarProfileName" class="profile-name">My Farmer Account</h2>
+                    <p id="sidebarProfileLocation" class="profile-location">Loading...</p>
+                </div>
+
+                <nav class="menu" aria-label="Sidebar menu">
+                    <a href="farmer-dashboard.html" class="menu-item">
+                        <span class="menu-icon">&#9638;</span>
+                        Overview
+                    </a>
+                    <a href="farmer-products.html" class="menu-item">
+                        <span class="menu-icon">&#9635;</span>
+                        Products
+                    </a>
+                    <a href="farmer-orders.html" class="menu-item active">
+                        <span class="menu-icon">&#9745;</span>
+                        Orders
+                    </a>
+                    <a href="farmer-feedback.html" class="menu-item">
+                        <span class="menu-icon">&#9993;</span>
+                        Feedback
+                    </a>
+                    <a href="farmer-help-support.html" class="menu-item">
+                        <span class="menu-icon">?</span>
+                        Help and Support
+                    </a>
+                    <a href="farmer-account.html" class="menu-item">
+                        <span class="menu-icon">&#9787;</span>
+                        Account
+                    </a>
+                </nav>
+            </div>
+
+            <a href="../../logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="main-panel orders-main">
+            <h1 class="orders-title">Order <span>Transaction</span></h1>
+
+            <div class="order-filters" role="tablist" aria-label="Order filters">
+                <button class="filter-pill active" type="button" data-filter="all">All</button>
+                <button class="filter-pill" type="button" data-filter="to_receive">To Receive</button>
+                <button class="filter-pill" type="button" data-filter="refund_return">Refund/Return</button>
+                <button class="filter-pill" type="button" data-filter="completed">Completed</button>
+                <button class="filter-pill" type="button" data-filter="cancelled">Cancelled</button>
+            </div>
+
+            <section class="order-list-wrap">
+                <div class="order-list-head">
+                    <span>IMAGE</span>
+                    <span>PRODUCT</span>
+                    <span>Amount</span>
+                    <span>Total Price</span>
+                    <span>Payment</span>
+                    <span>Status</span>
+                </div>
+                <div id="ordersRows" class="orders-rows" aria-live="polite"></div>
+                <p id="ordersEmptyState" class="orders-empty">No orders found for this filter.</p>
+            </section>
+        </section>
+    </main>
+    <script src="../../assets/js/farmer-sidebar.js"></script>
+    <script>
+        (function setupFarmerOrders() {
+            var API_URL = '../../farmer-orders-data.php';
+            var DEFAULT_IMAGE = '../../figma/images (2).jpg';
+            var currentFilter = 'all';
+            var ORDER_ID_STORAGE_KEY = 'agromarket_farmer_customer_order_id_v1';
+
+            var filterButtons = Array.prototype.slice.call(document.querySelectorAll('.filter-pill'));
+            var ordersRows = document.getElementById('ordersRows');
+            var ordersEmptyState = document.getElementById('ordersEmptyState');
+
+            function createOrderRow(item) {
+                var row = document.createElement('article');
+                row.className = 'order-row';
+                row.tabIndex = 0;
+                row.setAttribute('role', 'link');
+                row.setAttribute('aria-label', 'Open order details for ' + (item.product_name || 'order'));
+
+                function openDetails() {
+                    var oid = Number(item.order_id || 0);
+                    if (oid > 0) {
+                        try {
+                            sessionStorage.setItem(ORDER_ID_STORAGE_KEY, String(oid));
+                        } catch (_) {
+                            // Ignore storage failures.
+                        }
+                        window.location.href = 'customer-details.html?order_id=' + encodeURIComponent(String(oid));
+                    }
+                }
+
+                row.addEventListener('click', openDetails);
+                row.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openDetails();
+                    }
+                });
+
+                var imageCol = document.createElement('div');
+                imageCol.className = 'image-col';
+
+                var link = document.createElement('a');
+                link.href = 'customer-details.html?order_id=' + encodeURIComponent(String(item.order_id || 0));
+                link.className = 'order-image-link';
+                link.setAttribute('aria-label', 'Open customer details for ' + (item.consumer_name || 'customer'));
+                link.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    try {
+                        sessionStorage.setItem(ORDER_ID_STORAGE_KEY, String(item.order_id || 0));
+                    } catch (_) {
+                        // Ignore storage failures.
+                    }
+                });
+
+                var img = document.createElement('img');
+                img.src = item.image_path || DEFAULT_IMAGE;
+                img.alt = item.product_name || 'Product';
+                img.onerror = function () { img.src = DEFAULT_IMAGE; };
+
+                link.appendChild(img);
+                imageCol.appendChild(link);
+                row.appendChild(imageCol);
+
+                var product = document.createElement('p');
+                product.textContent = item.product_name || '-';
+                row.appendChild(product);
+
+                var qty = document.createElement('p');
+                qty.textContent = String(item.qty || 0);
+                row.appendChild(qty);
+
+                var total = document.createElement('p');
+                total.textContent = Number(item.line_total || 0).toFixed(2);
+                row.appendChild(total);
+
+                var payment = document.createElement('p');
+                payment.textContent = item.payment_label || 'Pending';
+                row.appendChild(payment);
+
+                var status = document.createElement('p');
+                status.className = 'status ' + (item.status_class || 'receive');
+                status.textContent = item.status_label || 'To receive';
+                row.appendChild(status);
+
+                return row;
+            }
+
+            function renderOrders(items) {
+                ordersRows.innerHTML = '';
+
+                if (!Array.isArray(items) || !items.length) {
+                    ordersEmptyState.style.display = 'block';
+                    return;
+                }
+
+                ordersEmptyState.style.display = 'none';
+                items.forEach(function (item) {
+                    ordersRows.appendChild(createOrderRow(item));
+                });
+            }
+
+            function loadOrders() {
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        filter: currentFilter
+                    })
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || data.ok !== true) {
+                            renderOrders([]);
+                            return;
+                        }
+
+                        renderOrders(Array.isArray(data.items) ? data.items : []);
+                    })
+                    .catch(function () {
+                        renderOrders([]);
+                    });
+            }
+
+            filterButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    filterButtons.forEach(function (item) {
+                        item.classList.remove('active');
+                    });
+
+                    button.classList.add('active');
+                    currentFilter = button.getAttribute('data-filter') || 'all';
+                    loadOrders();
+                });
+            });
+
+            loadOrders();
+        })();
+    </script>
+</body>
+
+</html>

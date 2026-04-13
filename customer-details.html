@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Details - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="farmer-dashboard.css" />
+    <link rel="stylesheet" href="customer-details.css" />
+</head>
+
+<body>
+    <main class="dashboard-page">
+        <aside class="sidebar">
+            <div>
+                <div class="profile-block">
+                    <img src="/figma/images (5).jpg" alt="Farmer profile" class="profile-image" />
+                    <h2 class="profile-name">Abdul Baten Molla</h2>
+                    <p class="profile-location">Kadirdi Bazar</p>
+                </div>
+
+                <nav class="menu" aria-label="Sidebar menu">
+                    <a href="farmer-dashboard.html" class="menu-item">
+                        <span class="menu-icon">&#9638;</span>
+                        Overview
+                    </a>
+                    <a href="farmer-products.html" class="menu-item">
+                        <span class="menu-icon">&#9635;</span>
+                        Products
+                    </a>
+                    <a href="farmer-orders.html" class="menu-item active">
+                        <span class="menu-icon">&#9745;</span>
+                        Orders
+                    </a>
+                    <a href="farmer-feedback.html" class="menu-item">
+                        <span class="menu-icon">&#9993;</span>
+                        Feedback
+                    </a>
+                    <a href="farmer-help-support.html" class="menu-item">
+                        <span class="menu-icon">?</span>
+                        Help and Support
+                    </a>
+                    <a href="farmer-account.html" class="menu-item">
+                        <span class="menu-icon">&#9787;</span>
+                        Account
+                    </a>
+                </nav>
+            </div>
+
+            <a href="index.html" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="main-panel customer-main">
+            <section class="panel consumer-card">
+                <h1>Consumer</h1>
+                <div class="consumer-row">
+                    <div class="consumer-left">
+                        <img src="/figma/images (2).jpg" alt="Customer" class="consumer-avatar" />
+                        <div>
+                            <p class="consumer-name">Mst. Tonni Islam</p>
+                            <p class="consumer-meta">Sent by Marko43 Oct 2 at 4:35PM</p>
+                        </div>
+                    </div>
+                    <button class="location-btn" type="button">Location: Sayednagar, B Block, Vandari Mor.</button>
+                </div>
+            </section>
+
+            <section class="panel latest-orders-card">
+                <div class="order-head">
+                    <h3>Latest Orders</h3>
+                    <div class="order-tools">
+                        <button type="button">Customize</button>
+                        <button type="button">Filter</button>
+                        <button type="button">Export</button>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Product</th>
+                                <th>Order Date</th>
+                                <th>Price</th>
+                                <th>Payment</th>
+                                <th>Status</th>
+                                <th>Method</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#2456JL</td>
+                                <td>Orange(2.5kg)</td>
+                                <td>Jan 12, 12:23 pm</td>
+                                <td>880</td>
+                                <td>Pending</td>
+                                <td class="processing">Processing</td>
+                                <td>Bkash</td>
+                            </tr>
+                            <tr>
+                                <td>#2455JL</td>
+                                <td>Mango(5kg)</td>
+                                <td>Jan 11, 12:23 pm</td>
+                                <td>500</td>
+                                <td>Transferred</td>
+                                <td class="completed">Completed</td>
+                                <td>Nagad</td>
+                            </tr>
+                            <tr>
+                                <td>#2454JL</td>
+                                <td>Watermelon(3)</td>
+                                <td>Jan 10, 12:23 pm</td>
+                                <td>1200</td>
+                                <td>Transferred</td>
+                                <td class="completed">Completed</td>
+                                <td>Nagad</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="decision-row">
+                    <button type="button" class="decision-btn">Accept</button>
+                    <button type="button" class="decision-btn">Decline</button>
+                </div>
+            </section>
+        </section>
+    </main>
+</body>
+
+</html>

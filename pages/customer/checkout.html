@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/landing.css" />
+    <link rel="stylesheet" href="../../assets/css/customer-checkout.css" />
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="nav-inner">
+            <a href="../../index.html" class="logo">
+                <div class="logo-icon">
+                    <img src="../../image/WhatsApp Image 2026-03-14 at 11.29.15 PM.jpeg" alt="AgroMarket logo" />
+                </div>
+                <span class="logo-text">AgroMarket</span>
+            </a>
+
+            <nav class="nav-links">
+                <a href="../../index.html">Home</a>
+                <a href="customer-marketplace.html">Products</a>
+                <a href="customer-marketplace.html#nearbySection">Near You</a>
+                <a href="#">Contact</a>
+                <a href="#">Support</a>
+            </nav>
+
+            <div class="nav-auth">
+                <a href="view-cart.html" class="nav-cart" aria-label="Cart">
+                    <span class="nav-cart-icon" aria-hidden="true">&#128722;</span>
+                    <span id="navCartCount" class="nav-cart-count">0</span>
+                </a>
+                <a href="customer-account.html" class="btn-login">My Account</a>
+                <a href="../../logout.php" class="btn-register">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="checkout-main">
+        <a href="view-cart.html" class="checkout-back" aria-label="Back to cart">&#8592;</a>
+        <h1>Checkout</h1>
+
+        <section class="checkout-grid">
+            <div class="checkout-left">
+                <article class="info-card">
+                    <div class="icon">&#128205;</div>
+                    <div class="content">
+                        <div class="title-row">
+                            <h2>Your location</h2>
+                            <button id="editLocationBtn" type="button" class="edit-btn">Edit</button>
+                        </div>
+                        <p id="locationText">Loading location...</p>
+                    </div>
+                </article>
+
+                <article class="info-card">
+                    <div class="icon">&#128100;</div>
+                    <div class="content">
+                        <div class="title-row">
+                            <h2>Personal Details</h2>
+                            <button id="editPersonalBtn" type="button" class="edit-btn">Edit</button>
+                        </div>
+                        <p id="nameText">Loading name...</p>
+                        <p id="phoneText"></p>
+                        <p id="emailText"></p>
+                    </div>
+                </article>
+
+                <section class="additional-info">
+                    <h3>Additional Info</h3>
+                    <label for="orderNotes">Order Notes (Optional)</label>
+                    <textarea id="orderNotes"
+                        placeholder="Notes about your order, e.g. special notes for delivery"></textarea>
+                </section>
+            </div>
+
+            <aside class="checkout-summary">
+                <h3>Order Summary</h3>
+                <div id="summaryItems" class="summary-items"></div>
+                <p class="empty-summary" id="emptySummary">No items in cart.</p>
+
+                <div class="totals">
+                    <p><span>Subtotal:</span><strong id="subtotalAmount">৳0.00</strong></p>
+                    <p><span>Shipping:</span><strong>Free</strong></p>
+                    <p class="total"><span>Total:</span><strong id="totalAmount">৳0.00</strong></p>
+                </div>
+
+                <div class="payment-methods">
+                    <h4>Payment Method</h4>
+                    <label><input type="radio" name="paymentMethod" value="cash" checked /> Cash on Delivery</label>
+                    <label><input type="radio" name="paymentMethod" value="nagad" /> Nagad</label>
+                    <label><input type="radio" name="paymentMethod" value="bkash" /> Bkash</label>
+                </div>
+
+                <button id="placeOrderBtn" type="button" class="place-order-btn">Place Order</button>
+                <p id="checkoutMessage" class="checkout-message"></p>
+            </aside>
+        </section>
+
+        <section id="profileModal" class="profile-modal" aria-hidden="true">
+            <div class="profile-modal-dialog">
+                <div class="profile-modal-head">
+                    <h3>Edit Information</h3>
+                    <button id="closeProfileModalBtn" type="button" aria-label="Close">&times;</button>
+                </div>
+
+                <form id="profileForm" class="profile-form" novalidate>
+                    <label>
+                        Full Name
+                        <input id="profileFullName" type="text" maxlength="120" required />
+                    </label>
+
+                    <label>
+                        Phone
+                        <input id="profilePhone" type="text" maxlength="25" />
+                    </label>
+
+                    <label>
+                        Address Line
+                        <input id="profileAddressLine" type="text" maxlength="255" />
+                    </label>
+
+                    <label>
+                        District
+                        <input id="profileDistrict" type="text" maxlength="80" />
+                    </label>
+
+                    <label>
+                        Division
+                        <input id="profileDivision" type="text" maxlength="80" />
+                    </label>
+
+                    <div class="profile-form-actions">
+                        <button id="cancelProfileBtn" type="button" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="save-btn">Save Changes</button>
+                    </div>
+                </form>
+
+                <p id="profileFormMessage" class="profile-form-message"></p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <a href="../../index.html" class="footer-logo" aria-label="AgroMarket Home">
+                    <img src="../../image/WhatsApp Image 2026-03-14 at 11.29.15 PM.jpeg" alt="AgroMarket logo" />
+                    <span class="footer-logo-text">AgroMarket</span>
+                </a>
+                <p>Discover local freshness, support nearby farmers, and enjoy high-quality food from trusted
+                    producers in your community.</p>
+            </div>
+
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <a href="../../index.html">Home</a>
+                <a href="#">About</a>
+                <a href="#">Blog</a>
+                <a href="#">Contact</a>
+            </div>
+
+            <div class="footer-links">
+                <h4>Support</h4>
+                <a href="#">FAQ</a>
+                <a href="#">Terms &amp; Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Help Center</a>
+            </div>
+
+            <div class="footer-contact">
+                <h4>Contact</h4>
+                <p>Email: agromarket@gmail.com</p>
+                <p>Phone: +01603294161</p>
+                <p>Sayednagar, B-block, Matikail, Dhaka</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>Copyright 2026 AgroMarket. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        (function setupCheckoutPage() {
+            var CART_STORAGE_KEY = 'agromarket_cart_v1';
+            var PRODUCT_API_URL = '../../customer-products-handler.php';
+            var CHECKOUT_API_URL = '../../customer-checkout-data.php';
+            var PLACE_ORDER_API_URL = '../../customer-place-order.php';
+            var FALLBACK_IMAGE = '../../figma/images (2).jpg';
+
+            var navCartCount = document.getElementById('navCartCount');
+            var locationText = document.getElementById('locationText');
+            var nameText = document.getElementById('nameText');
+            var phoneText = document.getElementById('phoneText');
+            var emailText = document.getElementById('emailText');
+            var summaryItems = document.getElementById('summaryItems');
+            var emptySummary = document.getElementById('emptySummary');
+            var subtotalAmount = document.getElementById('subtotalAmount');
+            var totalAmount = document.getElementById('totalAmount');
+            var placeOrderBtn = document.getElementById('placeOrderBtn');
+            var checkoutMessage = document.getElementById('checkoutMessage');
+            var editLocationBtn = document.getElementById('editLocationBtn');
+            var editPersonalBtn = document.getElementById('editPersonalBtn');
+            var profileModal = document.getElementById('profileModal');
+            var closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
+            var cancelProfileBtn = document.getElementById('cancelProfileBtn');
+            var profileForm = document.getElementById('profileForm');
+            var profileFullName = document.getElementById('profileFullName');
+            var profilePhone = document.getElementById('profilePhone');
+            var profileAddressLine = document.getElementById('profileAddressLine');
+            var profileDistrict = document.getElementById('profileDistrict');
+            var profileDivision = document.getElementById('profileDivision');
+            var profileFormMessage = document.getElementById('profileFormMessage');
+            var liveCartItems = [];
+
+            var profileState = {
+                full_name: 'Customer',
+                email: '',
+                phone: '',
+                address_line: '',
+                district: '',
+                division: '',
+                address: 'Location not set'
+            };
+
+            function readCartItems() {
+                try {
+                    var raw = localStorage.getItem(CART_STORAGE_KEY);
+                    var parsed = raw ? JSON.parse(raw) : [];
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch (_) {
+                    return [];
+                }
+            }
+
+            function writeCartItems(items) {
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+            }
+
+            function fetchLiveCartItems(items) {
+                if (!items.length) {
+                    return Promise.resolve([]);
+                }
+
+                return Promise.all(items.map(function (item) {
+                    var pid = Number(item.id || 0);
+                    if (pid <= 0) {
+                        return Promise.resolve(null);
+                    }
+
+                    return fetch(PRODUCT_API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            action: 'product_detail',
+                            product_id: pid
+                        })
+                    })
+                        .then(function (response) {
+                            if (response.status === 404) {
+                                return null;
+                            }
+                            return response.json();
+                        })
+                        .then(function (data) {
+                            if (!data || !data.success || !data.product) {
+                                return null;
+                            }
+
+                            return {
+                                id: pid,
+                                name: data.product.name || item.name || 'Product',
+                                price: Number(data.product.price || 0),
+                                image_path: data.product.image_path || item.image_path || FALLBACK_IMAGE,
+                                qty: Number(item.qty || 1)
+                            };
+                        })
+                        .catch(function () {
+                            return {
+                                id: pid,
+                                name: item.name || 'Product',
+                                price: Number(item.price || 0),
+                                image_path: item.image_path || FALLBACK_IMAGE,
+                                qty: Number(item.qty || 1)
+                            };
+                        });
+                }))
+                    .then(function (liveItems) {
+                        return liveItems.filter(Boolean);
+                    });
+            }
+
+            function updateNavCount(items) {
+                var count = items.reduce(function (sum, item) {
+                    return sum + Number(item.qty || 0);
+                }, 0);
+                navCartCount.textContent = String(count);
+            }
+
+            function renderOrderSummaryWithItems(items) {
+                summaryItems.innerHTML = '';
+
+                if (!items.length) {
+                    emptySummary.style.display = 'block';
+                    subtotalAmount.textContent = '৳0.00';
+                    totalAmount.textContent = '৳0.00';
+                    placeOrderBtn.disabled = true;
+                    return;
+                }
+
+                emptySummary.style.display = 'none';
+                placeOrderBtn.disabled = false;
+
+                var subtotal = 0;
+
+                items.forEach(function (item) {
+                    var row = document.createElement('article');
+                    row.className = 'summary-row';
+
+                    var img = document.createElement('img');
+                    img.src = item.image_path || FALLBACK_IMAGE;
+                    img.alt = item.name || 'Product';
+                    img.onerror = function () { img.src = FALLBACK_IMAGE; };
+
+                    var name = document.createElement('p');
+                    name.className = 'name';
+                    name.textContent = (item.name || 'Product') + '  x' + String(item.qty || 1);
+
+                    var priceValue = Number(item.price || 0) * Number(item.qty || 0);
+                    subtotal += priceValue;
+                    var price = document.createElement('p');
+                    price.className = 'price';
+                    price.textContent = priceValue.toFixed(2);
+
+                    row.appendChild(img);
+                    row.appendChild(name);
+                    row.appendChild(price);
+                    summaryItems.appendChild(row);
+                });
+
+                subtotalAmount.textContent = '৳' + subtotal.toFixed(2);
+                totalAmount.textContent = '৳' + subtotal.toFixed(2);
+            }
+
+            function renderOrderSummary(items) {
+                liveCartItems = items.slice();
+                renderOrderSummaryWithItems(liveCartItems);
+            }
+
+            function composeAddress(addressLine, district, division) {
+                var parts = [addressLine, district, division].filter(function (value) {
+                    return String(value || '').trim() !== '';
+                });
+                return parts.length ? parts.join(', ') : 'Location not set';
+            }
+
+            function renderProfileInfo() {
+                locationText.textContent = profileState.address || 'Location not set';
+                nameText.textContent = profileState.full_name || 'Customer';
+                phoneText.textContent = profileState.phone ? profileState.phone : 'Phone not set';
+                emailText.textContent = profileState.email ? profileState.email : 'Email not set';
+            }
+
+            function openProfileModal() {
+                profileFullName.value = profileState.full_name || '';
+                profilePhone.value = profileState.phone || '';
+                profileAddressLine.value = profileState.address_line || '';
+                profileDistrict.value = profileState.district || '';
+                profileDivision.value = profileState.division || '';
+                profileFormMessage.textContent = '';
+                profileModal.classList.add('open');
+                profileModal.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeProfileModal() {
+                profileModal.classList.remove('open');
+                profileModal.setAttribute('aria-hidden', 'true');
+            }
+
+            function loadProfile() {
+                fetch(CHECKOUT_API_URL, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || data.ok !== true) {
+                            return;
+                        }
+
+                        profileState.full_name = data.full_name || 'Customer';
+                        profileState.email = data.email || '';
+                        profileState.phone = data.phone || '';
+                        profileState.address_line = data.address_line || '';
+                        profileState.district = data.district || '';
+                        profileState.division = data.division || '';
+                        profileState.address = data.address || composeAddress(profileState.address_line, profileState.district, profileState.division);
+                        renderProfileInfo();
+                    })
+                    .catch(function () {
+                        locationText.textContent = 'Unable to load location';
+                    });
+            }
+
+            placeOrderBtn.addEventListener('click', function () {
+                if (!liveCartItems.length) {
+                    checkoutMessage.textContent = 'Your cart is empty.';
+                    return;
+                }
+
+                var selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
+                var paymentMethod = selectedPayment ? selectedPayment.value : 'cash';
+
+                placeOrderBtn.disabled = true;
+                checkoutMessage.textContent = 'Placing order...';
+
+                fetch(PLACE_ORDER_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        items: liveCartItems,
+                        payment_method: paymentMethod,
+                        shipping_address: profileState.address || ''
+                    })
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data) {
+                            return;
+                        }
+
+                        if (!data.ok) {
+                            checkoutMessage.textContent = data.message || 'Unable to place order.';
+                            placeOrderBtn.disabled = false;
+                            return;
+                        }
+
+                        writeCartItems([]);
+                        updateNavCount([]);
+                        renderOrderSummary([]);
+
+                        var orderCodes = Array.isArray(data.orders)
+                            ? data.orders.map(function (order) { return order.order_code; }).filter(Boolean)
+                            : [];
+
+                        checkoutMessage.textContent = orderCodes.length
+                            ? 'Order placed successfully: ' + orderCodes.join(', ')
+                            : 'Order placed successfully.';
+                    })
+                    .catch(function () {
+                        checkoutMessage.textContent = 'Network error while placing order.';
+                        placeOrderBtn.disabled = false;
+                    });
+            });
+
+            editLocationBtn.addEventListener('click', openProfileModal);
+            editPersonalBtn.addEventListener('click', openProfileModal);
+            closeProfileModalBtn.addEventListener('click', closeProfileModal);
+            cancelProfileBtn.addEventListener('click', closeProfileModal);
+
+            profileModal.addEventListener('click', function (event) {
+                if (event.target === profileModal) {
+                    closeProfileModal();
+                }
+            });
+
+            profileForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                var payload = {
+                    action: 'update_profile',
+                    full_name: profileFullName.value.trim(),
+                    phone: profilePhone.value.trim(),
+                    address_line: profileAddressLine.value.trim(),
+                    district: profileDistrict.value.trim(),
+                    division: profileDivision.value.trim()
+                };
+
+                if (!payload.full_name) {
+                    profileFormMessage.textContent = 'Full name is required.';
+                    profileFormMessage.className = 'profile-form-message error';
+                    return;
+                }
+
+                fetch(CHECKOUT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                })
+                    .then(function (response) { return response.json(); })
+                    .then(function (data) {
+                        if (!data || data.ok !== true) {
+                            profileFormMessage.textContent = (data && data.message) ? data.message : 'Failed to update information.';
+                            profileFormMessage.className = 'profile-form-message error';
+                            return;
+                        }
+
+                        profileState.full_name = payload.full_name;
+                        profileState.phone = payload.phone;
+                        profileState.address_line = payload.address_line;
+                        profileState.district = payload.district;
+                        profileState.division = payload.division;
+                        profileState.address = composeAddress(payload.address_line, payload.district, payload.division);
+                        renderProfileInfo();
+
+                        profileFormMessage.textContent = 'Information updated successfully.';
+                        profileFormMessage.className = 'profile-form-message success';
+                        setTimeout(closeProfileModal, 500);
+                    })
+                    .catch(function () {
+                        profileFormMessage.textContent = 'Network error while updating information.';
+                        profileFormMessage.className = 'profile-form-message error';
+                    });
+            });
+
+            var cartItems = readCartItems();
+            updateNavCount(cartItems);
+            fetchLiveCartItems(cartItems).then(function (liveItems) {
+                if (liveItems.length !== cartItems.length) {
+                    writeCartItems(liveItems);
+                } else {
+                    writeCartItems(liveItems);
+                }
+
+                updateNavCount(liveItems);
+                renderOrderSummary(liveItems);
+            });
+            renderProfileInfo();
+            loadProfile();
+        })();
+    </script>
+</body>
+
+</html>

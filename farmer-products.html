@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farmer Products - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="farmer-dashboard.css" />
+    <link rel="stylesheet" href="farmer-products.css" />
+</head>
+
+<body>
+    <main class="dashboard-page">
+        <aside class="sidebar">
+            <div>
+                <div class="profile-block">
+                    <img src="/figma/images (5).jpg" alt="Farmer profile" class="profile-image" />
+                    <h2 class="profile-name">Abdul Baten Molla</h2>
+                    <p class="profile-location">Kadirdi Bazar</p>
+                </div>
+
+                <nav class="menu" aria-label="Sidebar menu">
+                    <a href="farmer-dashboard.html" class="menu-item">
+                        <span class="menu-icon">&#9638;</span>
+                        Overview
+                    </a>
+                    <a href="farmer-products.html" class="menu-item active">
+                        <span class="menu-icon">&#9635;</span>
+                        Products
+                    </a>
+                    <a href="farmer-orders.html" class="menu-item">
+                        <span class="menu-icon">&#9745;</span>
+                        Orders
+                    </a>
+                    <a href="farmer-feedback.html" class="menu-item">
+                        <span class="menu-icon">&#9993;</span>
+                        Feedback
+                    </a>
+                    <a href="farmer-help-support.html" class="menu-item">
+                        <span class="menu-icon">?</span>
+                        Help and Support
+                    </a>
+                    <a href="farmer-account.html" class="menu-item">
+                        <span class="menu-icon">&#9787;</span>
+                        Account
+                    </a>
+                </nav>
+            </div>
+
+            <a href="index.html" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="main-panel products-main">
+            <h1 class="products-title">Product List</h1>
+
+            <section class="panel product-form-panel">
+                <div class="product-form-grid">
+                    <div class="upload-row">
+                        <button type="button" class="upload-btn">Upload Image</button>
+                        <span class="file-name">agromarket.png</span>
+                    </div>
+
+                    <label>
+                        Product Name
+                        <input type="text" placeholder="Enter Product Name" />
+                    </label>
+
+                    <label>
+                        Stock
+                        <input type="number" placeholder="Enter Price" />
+                    </label>
+
+                    <label>
+                        Category
+                        <input type="text" placeholder="Select category" />
+                    </label>
+
+                    <label>
+                        Price
+                        <input type="number" placeholder="Enter Price" />
+                    </label>
+
+                    <div class="post-box">
+                        <p>Note: Ensure that all information are correct.</p>
+                        <button type="button" class="post-btn">Post product</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="list-wrap">
+                <div class="list-head">
+                    <span>IMAGE</span>
+                    <span>PRODUCT</span>
+                    <span>PRICE</span>
+                    <span>STOCK</span>
+                    <span>CATEGORY</span>
+                    <span>ACTION</span>
+                </div>
+
+                <article class="list-row">
+                    <div class="image-col"><img src="/figma/images (2).jpg" alt="Orange" /></div>
+                    <p>Orange</p>
+                    <p>50</p>
+                    <p>100</p>
+                    <p>Fruits</p>
+                    <p class="action-dot">...</p>
+                </article>
+
+                <article class="list-row">
+                    <div class="image-col"><img src="/figma/images (3).jpg" alt="Guava" /></div>
+                    <p>Guava</p>
+                    <p>50</p>
+                    <p>100</p>
+                    <p>Fruits</p>
+                    <p class="action-dot">...</p>
+                </article>
+
+                <article class="list-row">
+                    <div class="image-col"><img src="/figma/images (4).jpg" alt="Watermelon" /></div>
+                    <p>Watermelon</p>
+                    <p>50</p>
+                    <p>100</p>
+                    <p>Fruits</p>
+                    <p class="action-dot">...</p>
+                </article>
+            </section>
+        </section>
+    </main>
+</body>
+
+</html>

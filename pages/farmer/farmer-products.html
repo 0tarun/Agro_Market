@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farmer Products - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/farmer-dashboard.css" />
+    <link rel="stylesheet" href="../../assets/css/farmer-products.css" />
+</head>
+
+<body>
+    <main class="dashboard-page">
+        <aside class="sidebar">
+            <div>
+                <div class="profile-block">
+                    <img id="sidebarProfileImage" src="../../figma/images (5).jpg" alt="Farmer profile"
+                        class="profile-image" />
+                    <h2 id="sidebarProfileName" class="profile-name">My Farmer Account</h2>
+                    <p id="sidebarProfileLocation" class="profile-location">Loading...</p>
+                </div>
+
+                <nav class="menu" aria-label="Sidebar menu">
+                    <a href="farmer-dashboard.html" class="menu-item">
+                        <span class="menu-icon">&#9638;</span>
+                        Overview
+                    </a>
+                    <a href="farmer-products.html" class="menu-item active">
+                        <span class="menu-icon">&#9635;</span>
+                        Products
+                    </a>
+                    <a href="farmer-orders.html" class="menu-item">
+                        <span class="menu-icon">&#9745;</span>
+                        Orders
+                    </a>
+                    <a href="farmer-feedback.html" class="menu-item">
+                        <span class="menu-icon">&#9993;</span>
+                        Feedback
+                    </a>
+                    <a href="farmer-help-support.html" class="menu-item">
+                        <span class="menu-icon">?</span>
+                        Help and Support
+                    </a>
+                    <a href="farmer-account.html" class="menu-item">
+                        <span class="menu-icon">&#9787;</span>
+                        Account
+                    </a>
+                </nav>
+            </div>
+
+            <a href="../../logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="main-panel products-main">
+            <h1 class="products-title">Product List</h1>
+
+            <section class="panel product-form-panel">
+                <form id="productForm" class="product-form-grid" novalidate>
+                    <div class="upload-row">
+                        <input id="productImage" type="file" accept="image/*" hidden />
+                        <button id="uploadBtn" type="button" class="upload-btn">Upload Image</button>
+                        <span id="fileName" class="file-name">No image selected</span>
+                    </div>
+
+                    <label>
+                        Product Name
+                        <input id="productName" type="text" placeholder="Enter Product Name" maxlength="80" required />
+                    </label>
+
+                    <label>
+                        Stock
+                        <input id="productStock" type="number" placeholder="Enter Stock" min="0" required />
+                    </label>
+
+                    <label>
+                        Category
+                        <select id="productCategory" required>
+                            <option value="">Select category</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Grains">Grains</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Fish">Fish</option>
+                            <option value="Livestock">Livestock</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Harvest Date
+                        <input id="harvestDate" type="date" required />
+                    </label>
+
+                    <label>
+                        Price
+                        <input id="productPrice" type="number" placeholder="Enter Price" min="0" step="0.01" required />
+                    </label>
+
+                    <div class="post-box">
+                        <p>Note: Ensure that all information are correct.</p>
+                        <button type="submit" class="post-btn">Post product</button>
+                    </div>
+                </form>
+                <p id="formMessage" class="form-message" aria-live="polite"></p>
+            </section>
+
+            <section class="list-wrap">
+                <div class="list-head">
+                    <span>IMAGE</span>
+                    <span>PRODUCT</span>
+                    <span>PRICE</span>
+                    <span>STOCK</span>
+                    <span>CATEGORY</span>
+                    <span>ACTION</span>
+                </div>
+                <div id="productsRows" class="products-rows" aria-live="polite"></div>
+                <p id="emptyState" class="empty-state">No products posted yet.</p>
+            </section>
+        </section>
+    </main>
+    <script src="../../assets/js/farmer-sidebar.js"></script>
+    <script>
+        (function setupProductPage() {
+            var DEFAULT_IMAGE = '../../figma/images (5).jpg';
+            var API_URL = '../../farmer-products-handler.php';
+
+            var form = document.getElementById('productForm');
+            var uploadBtn = document.getElementById('uploadBtn');
+            var imageInput = document.getElementById('productImage');
+            var fileName = document.getElementById('fileName');
+            var nameInput = document.getElementById('productName');
+            var stockInput = document.getElementById('productStock');
+            var categoryInput = document.getElementById('productCategory');
+            var priceInput = document.getElementById('productPrice');
+            var harvestInput = document.getElementById('harvestDate');
+            var rowsWrap = document.getElementById('productsRows');
+            var emptyState = document.getElementById('emptyState');
+            var formMessage = document.getElementById('formMessage');
+            var submitBtn = form.querySelector('.post-btn');
+
+            var editingProductId = null;
+
+            function showMessage(text, isError) {
+                formMessage.textContent = text;
+                formMessage.className = 'form-message ' + (isError ? 'error' : 'success');
+            }
+
+            function createRow(product) {
+                var row = document.createElement('article');
+                row.className = 'list-row';
+
+                var imageCol = document.createElement('div');
+                imageCol.className = 'image-col';
+                var img = document.createElement('img');
+                img.src = product.image_path || DEFAULT_IMAGE;
+                img.alt = product.name || 'Product';
+                img.onerror = function () { img.src = DEFAULT_IMAGE; };
+                imageCol.appendChild(img);
+                row.appendChild(imageCol);
+
+                var name = document.createElement('p');
+                name.textContent = product.name || '-';
+                row.appendChild(name);
+
+                var price = document.createElement('p');
+                price.textContent = Number(product.price || 0).toFixed(2);
+                row.appendChild(price);
+
+                var stock = document.createElement('p');
+                stock.textContent = String(product.stock || 0);
+                row.appendChild(stock);
+
+                var category = document.createElement('p');
+                category.textContent = product.category || 'Uncategorized';
+                row.appendChild(category);
+
+                var actionWrap = document.createElement('div');
+                actionWrap.className = 'action-wrap';
+
+                var actionBtn = document.createElement('button');
+                actionBtn.type = 'button';
+                actionBtn.className = 'action-dot';
+                actionBtn.textContent = '•••';
+
+                var menu = document.createElement('div');
+                menu.className = 'action-menu';
+
+                var editBtn = document.createElement('button');
+                editBtn.type = 'button';
+                editBtn.className = 'action-item';
+                editBtn.textContent = 'Edit';
+
+                var removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'action-item danger';
+                removeBtn.textContent = 'Remove';
+
+                actionBtn.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    var openMenu = rowsWrap.querySelector('.action-menu.open');
+                    if (openMenu && openMenu !== menu) {
+                        openMenu.classList.remove('open');
+                    }
+                    menu.classList.toggle('open');
+                });
+
+                editBtn.addEventListener('click', function () {
+                    menu.classList.remove('open');
+                    editingProductId = Number(product.id || 0);
+                    nameInput.value = product.name || '';
+                    stockInput.value = String(product.stock || 0);
+                    priceInput.value = Number(product.base_price || product.price || 0).toFixed(2);
+                    categoryInput.value = product.category || '';
+                    harvestInput.value = product.harvest_date || '';
+                    submitBtn.textContent = 'Update product';
+                    fileName.textContent = 'Keeping previous image';
+                    showMessage('Editing product: ' + (product.name || ''), false);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+
+                removeBtn.addEventListener('click', function () {
+                    menu.classList.remove('open');
+                    var pid = Number(product.id || 0);
+                    if (pid <= 0) {
+                        showMessage('Invalid product id.', true);
+                        return;
+                    }
+                    if (!window.confirm('Remove this product?')) {
+                        return;
+                    }
+
+                    fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            action: 'delete_product',
+                            product_id: pid
+                        })
+                    })
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (!data || data.success !== true) {
+                                showMessage((data && data.message) ? data.message : 'Failed to remove product.', true);
+                                return;
+                            }
+
+                            if (editingProductId === pid) {
+                                editingProductId = null;
+                                form.reset();
+                                fileName.textContent = 'No image selected';
+                                submitBtn.textContent = 'Post product';
+                            }
+                            showMessage('Product removed successfully.', false);
+                            loadProducts();
+                        })
+                        .catch(function () {
+                            showMessage('Network error while removing product.', true);
+                        });
+                });
+
+                menu.appendChild(editBtn);
+                menu.appendChild(removeBtn);
+                actionWrap.appendChild(actionBtn);
+                actionWrap.appendChild(menu);
+                row.appendChild(actionWrap);
+
+                return row;
+            }
+
+            function loadProducts() {
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ action: 'list_products' })
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        rowsWrap.innerHTML = '';
+
+                        if (!data || data.success !== true || !Array.isArray(data.products) || !data.products.length) {
+                            emptyState.style.display = 'block';
+                            return;
+                        }
+
+                        emptyState.style.display = 'none';
+                        data.products.forEach(function (product) {
+                            rowsWrap.appendChild(createRow(product));
+                        });
+                    })
+                    .catch(function () {
+                        emptyState.style.display = 'block';
+                    });
+            }
+
+            uploadBtn.addEventListener('click', function () {
+                imageInput.click();
+            });
+
+            document.addEventListener('click', function () {
+                var openMenu = rowsWrap.querySelector('.action-menu.open');
+                if (openMenu) {
+                    openMenu.classList.remove('open');
+                }
+            });
+
+            imageInput.addEventListener('change', function () {
+                if (!imageInput.files || !imageInput.files.length) {
+                    fileName.textContent = 'No image selected';
+                    return;
+                }
+
+                var file = imageInput.files[0];
+                fileName.textContent = file.name;
+            });
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                if (!nameInput.value.trim() || categoryInput.value === '') {
+                    showMessage('Please fill all required fields.', true);
+                    return;
+                }
+
+                var stock = Number(stockInput.value);
+                var price = Number(priceInput.value);
+
+                if (Number.isNaN(stock) || stock < 0 || Number.isNaN(price) || price < 0) {
+                    showMessage('Please enter valid stock and price.', true);
+                    return;
+                }
+
+                if (editingProductId !== null) {
+                    fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            action: 'update_product',
+                            product_id: editingProductId,
+                            product_name: nameInput.value.trim(),
+                            product_stock: stock,
+                            product_price: price,
+                            product_category_name: categoryInput.value,
+                            harvest_date: harvestInput.value
+                        })
+                    })
+                        .then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (!data || data.success !== true) {
+                                showMessage((data && data.message) ? data.message : 'Failed to update product.', true);
+                                return;
+                            }
+
+                            showMessage('Product updated successfully.', false);
+                            editingProductId = null;
+                            form.reset();
+                            fileName.textContent = 'No image selected';
+                            submitBtn.textContent = 'Post product';
+                            loadProducts();
+                        })
+                        .catch(function () {
+                            showMessage('Network error while updating product.', true);
+                        });
+                    return;
+                }
+
+                if (!harvestInput.value) {
+                    showMessage('Please select a harvest date.', true);
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('action', 'add_product');
+                formData.append('product_name', nameInput.value.trim());
+                formData.append('product_stock', String(stock));
+                formData.append('product_price', String(price));
+                formData.append('product_category_name', categoryInput.value);
+                formData.append('harvest_date', harvestInput.value);
+                if (imageInput.files && imageInput.files[0]) {
+                    formData.append('product_image', imageInput.files[0]);
+                }
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        if (!data || data.success !== true) {
+                            showMessage((data && data.message) ? data.message : 'Failed to post product.', true);
+                            return;
+                        }
+
+                        showMessage('Product posted successfully.', false);
+                        form.reset();
+                        fileName.textContent = 'No image selected';
+                        submitBtn.textContent = 'Post product';
+                        editingProductId = null;
+                        loadProducts();
+                    })
+                    .catch(function () {
+                        showMessage('Network error while posting product.', true);
+                    });
+            });
+
+            loadProducts();
+        })();
+    </script>
+</body>
+
+</html>

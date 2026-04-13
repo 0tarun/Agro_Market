@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Agromarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <style>
+        /* ── Compact overrides for Registration page ── */
+        .left-panel {
+            padding: 28px 40px 24px;
+        }
+
+        .logo-wrap {
+            margin-bottom: 18px;
+        }
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        .form>.field {
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            font-size: 12.5px;
+        }
+
+        .password-row .field {
+            padding: 8px 38px 8px 12px;
+            font-size: 12.5px;
+        }
+
+        .password-row+.password-row {
+            margin-top: 8px;
+        }
+
+        .login-btn.register-btn {
+            margin-top: 16px;
+            height: 40px;
+            font-size: 14px;
+        }
+
+        .bottom-row {
+            margin-top: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="page">
+        <section class="left-panel">
+            <div class="logo-wrap">
+                <img class="logo-image" src="../../image/WhatsApp Image 2026-03-14 at 11.29.15 PM.jpeg"
+                    alt="Agromarket Logo">
+                <p class="logo-label">AGROMARKET</p>
+            </div>
+
+            <h1 class="title">Register</h1>
+            <p class="subtitle">Enter your details to get started</p>
+
+            <div id="authMessage" class="auth-message" style="display:none;" role="alert"></div>
+
+            <form class="form" action="../../register.php" method="post">
+                <input class="field" type="text" name="full_name" placeholder="Full Name" aria-label="Full Name"
+                    required>
+                <input class="field" type="email" name="email" placeholder="Email Address" aria-label="Email" required>
+                <input class="field" type="tel" name="phone" placeholder="Phone Number" aria-label="Phone Number">
+
+                <div class="password-row">
+                    <input class="field" type="password" name="password" placeholder="Create Password"
+                        aria-label="Create Password" required minlength="6">
+                    <button class="eye-btn" type="button" aria-label="Show password">◐</button>
+                </div>
+
+                <div class="password-row">
+                    <input class="field" type="password" name="confirm_password" placeholder="Confirm Password"
+                        aria-label="Confirm Password" required minlength="6">
+                    <button class="eye-btn" type="button" aria-label="Show password">◐</button>
+                </div>
+
+                <button class="login-btn register-btn" type="submit">Register</button>
+            </form>
+
+            <div class="bottom-row">
+                <p>Already have an account?</p>
+                <a class="signup-btn" href="Login.html">Login</a>
+            </div>
+        </section>
+
+        <section class="right-panel">
+            <!-- <img class="right-image" src="https://earthagrichem.com/wp-content/uploads/2025/05/OUR-1024x1024.jpg" -->
+            <img class="right-image" src="/figma/WhatsApp Image 2026-03-14 at 11.28.45 PM.jpeg" alt="Right side image">
+        </section>
+    </main>
+
+    <style>
+        .auth-message {
+            max-width: 360px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        .auth-message.error {
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid rgba(231, 76, 60, 0.4);
+            color: #f5a8a0;
+        }
+        .auth-message.success {
+            background: rgba(39, 174, 96, 0.15);
+            border: 1px solid rgba(39, 174, 96, 0.4);
+            color: #a8f0c6;
+        }
+    </style>
+
+    <script>
+        (function () {
+            // Show error/success messages from URL params
+            var params = new URLSearchParams(window.location.search);
+            var error = params.get('error');
+            var success = params.get('success');
+            var msgEl = document.getElementById('authMessage');
+
+            if (error && msgEl) {
+                msgEl.textContent = decodeURIComponent(error.replace(/\+/g, ' '));
+                msgEl.className = 'auth-message error';
+                msgEl.style.display = 'block';
+            } else if (success && msgEl) {
+                msgEl.textContent = decodeURIComponent(success.replace(/\+/g, ' '));
+                msgEl.className = 'auth-message success';
+                msgEl.style.display = 'block';
+            }
+
+            // Password toggle functionality
+            var eyeButtons = document.querySelectorAll('.eye-btn');
+            eyeButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var input = btn.parentElement.querySelector('.field');
+                    if (!input) return;
+
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        btn.textContent = '◑';
+                        btn.setAttribute('aria-label', 'Hide password');
+                    } else {
+                        input.type = 'password';
+                        btn.textContent = '◐';
+                        btn.setAttribute('aria-label', 'Show password');
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+
+</html>

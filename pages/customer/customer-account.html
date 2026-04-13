@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Account - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/customer-account.css" />
+</head>
+
+<body>
+    <main class="account-page">
+        <aside class="account-sidebar">
+            <div class="sidebar-top">
+                <img id="profileImage" class="profile-image" src="../../figma/images (2).jpg" alt="Customer profile" />
+                <button id="editPhotoBtn" type="button" class="edit-link">Edit</button>
+                <input id="profileImageInput" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" />
+                <h2 id="profileName" class="profile-name">Customer</h2>
+                <p id="profileLocation" class="profile-location">Location not set</p>
+
+                <nav class="sidebar-nav" aria-label="Customer account menu">
+                    <a href="customer-account.html" class="nav-item active">Account Info</a>
+                    <a href="customer-orders.html" class="nav-item">Orders</a>
+                    <a href="#" class="nav-item">Notifications</a>
+                    <a href="customer-feedback.html" class="nav-item">Feedback</a>
+                </nav>
+            </div>
+
+            <a href="../../logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="account-content">
+            <header class="content-head">
+                <h1>Personal <span>Information</span></h1>
+            </header>
+
+            <form id="accountForm" class="account-form" novalidate>
+                <div class="form-grid">
+                    <label class="field">
+                        <span>Email Address</span>
+                        <input id="email" type="email" disabled />
+                    </label>
+
+                    <label class="field">
+                        <span>Location Address</span>
+                        <input id="division" type="text" name="division" placeholder="Division" />
+                    </label>
+
+                    <label class="field">
+                        <span>First Name</span>
+                        <input id="firstName" type="text" name="first_name" required />
+                    </label>
+
+                    <label class="field">
+                        <span>District</span>
+                        <input id="district" type="text" name="district" placeholder="District" />
+                    </label>
+
+                    <label class="field">
+                        <span>Last Name</span>
+                        <input id="lastName" type="text" name="last_name" />
+                    </label>
+
+                    <label class="field field-wide">
+                        <span>Street, Village, Thana, Union</span>
+                        <input id="addressLine" type="text" name="address_line" placeholder="Write full address" />
+                    </label>
+
+                    <label class="field field-wide">
+                        <span>Phone Number</span>
+                        <input id="phone" type="tel" name="phone" placeholder="01XXXXXXXXX" />
+                    </label>
+                </div>
+
+                <div class="actions">
+                    <button id="saveBtn" type="submit">Update</button>
+                    <p id="formStatus" class="form-status" aria-live="polite"></p>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        (function setupCustomerAccount() {
+            var API_URL = '../../customer-checkout-data.php';
+            var UPDATE_URL = '../../customer-checkout-data.php';
+            var IMAGE_UPLOAD_URL = '../../customer-update-account.php';
+            var FALLBACK_IMAGE = '../../figma/images (2).jpg';
+            var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+            var ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+            var profileImage = document.getElementById('profileImage');
+            var profileName = document.getElementById('profileName');
+            var profileLocation = document.getElementById('profileLocation');
+            var editPhotoBtn = document.getElementById('editPhotoBtn');
+            var profileImageInput = document.getElementById('profileImageInput');
+
+            var email = document.getElementById('email');
+            var firstName = document.getElementById('firstName');
+            var lastName = document.getElementById('lastName');
+            var phone = document.getElementById('phone');
+            var district = document.getElementById('district');
+            var division = document.getElementById('division');
+            var addressLine = document.getElementById('addressLine');
+
+            var accountForm = document.getElementById('accountForm');
+            var formStatus = document.getElementById('formStatus');
+            var saveBtn = document.getElementById('saveBtn');
+
+            function splitName(fullName) {
+                var cleaned = String(fullName || '').trim();
+                if (!cleaned) {
+                    return { first: '', last: '' };
+                }
+
+                var parts = cleaned.split(/\s+/);
+                if (parts.length === 1) {
+                    return { first: parts[0], last: '' };
+                }
+
+                return {
+                    first: parts[0],
+                    last: parts.slice(1).join(' ')
+                };
+            }
+
+            function joinName(first, last) {
+                return [String(first || '').trim(), String(last || '').trim()].filter(Boolean).join(' ');
+            }
+
+            function setStatus(message, isError) {
+                formStatus.textContent = message || '';
+                formStatus.className = 'form-status' + (isError ? ' error' : ' success');
+            }
+
+            function uploadProfileImage(file) {
+                var formData = new FormData();
+                formData.append('profile_image', file);
+
+                editPhotoBtn.disabled = true;
+                setStatus('Uploading profile image...', false);
+
+                fetch(IMAGE_UPLOAD_URL, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                })
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            setStatus((data && data.message) ? data.message : 'Image upload failed.', true);
+                            return;
+                        }
+
+                        profileImage.src = data.profile_image || FALLBACK_IMAGE;
+                        profileImage.onerror = function () {
+                            profileImage.src = FALLBACK_IMAGE;
+                        };
+                        setStatus(data.message || 'Profile image updated.', false);
+                    })
+                    .catch(function () {
+                        setStatus('Network error while uploading image.', true);
+                    })
+                    .finally(function () {
+                        editPhotoBtn.disabled = false;
+                        profileImageInput.value = '';
+                    });
+            }
+
+            function fillForm(data) {
+                var fullName = String(data.full_name || '');
+                var names = splitName(fullName);
+
+                profileName.textContent = fullName || 'Customer';
+                profileLocation.textContent = String(data.address || 'Location not set');
+
+                profileImage.src = data.profile_image || FALLBACK_IMAGE;
+                profileImage.onerror = function () {
+                    profileImage.src = FALLBACK_IMAGE;
+                };
+
+                email.value = String(data.email || '');
+                firstName.value = names.first;
+                lastName.value = names.last;
+                phone.value = String(data.phone || '');
+                district.value = String(data.district || '');
+                division.value = String(data.division || '');
+                addressLine.value = String(data.address_line || '');
+            }
+
+            function loadProfile() {
+                fetch(API_URL, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data) {
+                            return;
+                        }
+
+                        if (!data.ok) {
+                            setStatus(data.message || 'Could not load account data.', true);
+                            return;
+                        }
+
+                        fillForm(data);
+                    })
+                    .catch(function () {
+                        setStatus('Network error while loading profile.', true);
+                    });
+            }
+
+            accountForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                var fullName = joinName(firstName.value, lastName.value);
+                if (!fullName) {
+                    setStatus('First name is required.', true);
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                setStatus('Updating profile...', false);
+
+                fetch(UPDATE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'update_profile',
+                        full_name: fullName,
+                        phone: phone.value,
+                        district: district.value,
+                        division: division.value,
+                        address_line: addressLine.value
+                    })
+                })
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data.ok) {
+                            setStatus(data.message || 'Profile update failed.', true);
+                            return;
+                        }
+
+                        setStatus(data.message || 'Profile updated successfully.', false);
+                        loadProfile();
+                    })
+                    .catch(function () {
+                        setStatus('Network error while updating profile.', true);
+                    })
+                    .finally(function () {
+                        saveBtn.disabled = false;
+                    });
+            });
+
+            editPhotoBtn.addEventListener('click', function () {
+                profileImageInput.click();
+            });
+
+            profileImageInput.addEventListener('change', function (event) {
+                var file = event.target.files && event.target.files[0];
+                if (!file) {
+                    return;
+                }
+
+                if (ALLOWED_IMAGE_TYPES.indexOf(file.type) === -1) {
+                    setStatus('Only JPG, PNG, and WEBP images are allowed.', true);
+                    profileImageInput.value = '';
+                    return;
+                }
+
+                if (file.size > MAX_IMAGE_BYTES) {
+                    setStatus('Image size must be less than 2MB.', true);
+                    profileImageInput.value = '';
+                    return;
+                }
+
+                uploadProfileImage(file);
+            });
+
+            loadProfile();
+        })();
+    </script>
+</body>
+
+</html>
