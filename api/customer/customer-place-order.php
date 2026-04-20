@@ -40,6 +40,15 @@ if (!in_array($paymentMethod, $allowedMethods, true)) {
     exit;
 }
 
+if ($shippingAddress !== '' && mb_strlen($shippingAddress) > 255) {
+    http_response_code(400);
+    echo json_encode([
+        'ok' => false,
+        'message' => 'Shipping address is too long',
+    ]);
+    exit;
+}
+
 if (!$items) {
     http_response_code(400);
     echo json_encode([
@@ -103,6 +112,8 @@ try {
         exit;
     }
 
+    $pdo->beginTransaction();
+
     $placeholders = implode(',', array_fill(0, count($productIds), '?'));
     $productsStmt = $pdo->prepare(
         "SELECT id, farmer_id, name, price, stock_qty, harvest_date, created_at, is_active
@@ -160,8 +171,6 @@ try {
             'line_total' => (float)$pricing['effective_price'] * $qty,
         ];
     }
-
-    $pdo->beginTransaction();
 
     $insertOrder = $pdo->prepare(
         'INSERT INTO orders (order_code, consumer_id, farmer_id, status, payment_status, payment_method, total_amount, shipping_address)
@@ -227,6 +236,7 @@ try {
 
     $pdo->commit();
 
+    http_response_code(201);
     echo json_encode([
         'ok' => true,
         'message' => 'Order placed successfully',

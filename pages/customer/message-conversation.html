@@ -173,6 +173,11 @@
                             window.location.href = '../auth/Login.html?error=Please+login+first';
                             return null;
                         }
+
+                        if (!response.ok) {
+                            throw new Error('Could not open conversation');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
@@ -209,6 +214,11 @@
                             window.location.href = '../auth/Login.html?error=Please+login+first';
                             return null;
                         }
+
+                        if (!response.ok) {
+                            throw new Error('Failed to load messages');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
@@ -255,9 +265,22 @@
                     })
                 })
                     .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+
+                        if (!response.ok) {
+                            throw new Error('Failed to send message');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
+                        if (!data) {
+                            return;
+                        }
+
                         if (!data || !data.ok) {
                             conversationState.textContent = (data && data.message) ? data.message : 'Failed to send message';
                             return;
@@ -293,6 +316,11 @@
                             window.location.href = '../auth/Login.html?error=Please+login+first';
                             return null;
                         }
+
+                        if (!response.ok) {
+                            throw new Error('Request failed');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {

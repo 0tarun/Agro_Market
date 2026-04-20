@@ -49,8 +49,8 @@ try {
 
     $category = trim((string)($rawInput['category'] ?? 'All'));
 
-        $baseProductsSql =
-                'SELECT p.id, p.name, p.price, p.stock_qty, p.harvest_date, p.created_at, p.image_path, p.farmer_id, c.id AS category_id, c.name AS category_name, u.full_name AS farmer_name
+    $baseProductsSql =
+        'SELECT p.id, p.name, p.price, p.stock_qty, p.harvest_date, p.created_at, p.image_path, p.farmer_id, c.id AS category_id, c.name AS category_name, u.full_name AS farmer_name
          FROM products p
          JOIN users u ON u.id = p.farmer_id
          LEFT JOIN categories c ON c.id = p.category_id
@@ -59,9 +59,9 @@ try {
            AND u.is_active = 1
            AND LOWER(u.role) = :farmer_role';
 
-        $baseParams = [':farmer_role' => 'farmer'];
-        $productsSql = $baseProductsSql;
-        $params = $baseParams;
+    $baseParams = [':farmer_role' => 'farmer'];
+    $productsSql = $baseProductsSql;
+    $params = $baseParams;
 
     if ($category !== '' && strcasecmp($category, 'All') !== 0) {
         $productsSql .= ' AND c.name = :category_name';
@@ -159,7 +159,7 @@ try {
 
 function toPublicAssetPath(string $rawPath): string
 {
-    $path = trim(str_replace('\\\\', '/', $rawPath));
+    $path = trim(str_replace('\\', '/', $rawPath));
     if ($path === '') {
         $path = '/figma/images (2).jpg';
     }
@@ -169,7 +169,7 @@ function toPublicAssetPath(string $rawPath): string
             $path = '/' . ltrim($path, '/');
         }
 
-        $basePath = trim(str_replace('\\\\', '/', dirname((string)($_SERVER['SCRIPT_NAME'] ?? ''), 3)), '/');
+        $basePath = trim(str_replace('\\', '/', dirname((string)($_SERVER['SCRIPT_NAME'] ?? ''), 3)), '/');
         if ($basePath !== '') {
             $prefix = '/' . $basePath;
             if (strpos($path, $prefix . '/') !== 0 && $path !== $prefix) {

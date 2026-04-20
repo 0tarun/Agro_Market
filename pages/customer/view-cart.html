@@ -162,6 +162,11 @@
                             if (response.status === 404) {
                                 return null;
                             }
+
+                            if (!response.ok) {
+                                throw new Error('Failed to load product details');
+                            }
+
                             return response.json();
                         })
                         .then(function (data) {
@@ -314,13 +319,11 @@
             function renderCart() {
                 var items = readCartItems();
                 fetchLiveCartItems(items).then(function (liveItems) {
-                    if (liveItems.length !== items.length) {
-                        writeCartItems(liveItems);
-                    } else {
-                        writeCartItems(liveItems);
-                    }
+                    writeCartItems(liveItems);
 
                     renderCartWithItems(liveItems);
+                }).catch(function () {
+                    renderCartWithItems(items);
                 });
             }
 

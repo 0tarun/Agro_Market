@@ -493,8 +493,18 @@ function uploadProductImage(array $file, int $userId): ?string
     // Validate file type
     $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    if ($finfo === false) {
+        throw new Exception('Could not inspect uploaded image');
+    }
+
+    $mimeTypeRaw = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
+
+    if ($mimeTypeRaw === false) {
+        throw new Exception('Could not detect image type');
+    }
+
+    $mimeType = (string)$mimeTypeRaw;
 
     if (!in_array($mimeType, $allowedMimes, true)) {
         throw new Exception('Invalid image file type. Allowed: JPG, PNG, GIF, WebP');

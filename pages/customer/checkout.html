@@ -55,7 +55,7 @@
                             <h2>Your location</h2>
                             <button id="editLocationBtn" type="button" class="edit-btn">Edit</button>
                         </div>
-                        <p id="locationText">Loading location...</p>
+                        <p id="locationText">Location not set</p>
                     </div>
                 </article>
 
@@ -66,7 +66,7 @@
                             <h2>Personal Details</h2>
                             <button id="editPersonalBtn" type="button" class="edit-btn">Edit</button>
                         </div>
-                        <p id="nameText">Loading name...</p>
+                        <p id="nameText">Customer</p>
                         <p id="phoneText"></p>
                         <p id="emailText"></p>
                     </div>
@@ -270,6 +270,11 @@
                             if (response.status === 404) {
                                 return null;
                             }
+
+                            if (!response.ok) {
+                                throw new Error('Failed to load product details');
+                            }
+
                             return response.json();
                         })
                         .then(function (data) {
@@ -397,10 +402,16 @@
                             window.location.href = '../auth/Login.html?error=Please+login+first';
                             return null;
                         }
+
+                        if (!response.ok) {
+                            throw new Error('Failed to load profile');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
                         if (!data || data.ok !== true) {
+                            renderProfileInfo();
                             return;
                         }
 
@@ -414,6 +425,7 @@
                         renderProfileInfo();
                     })
                     .catch(function () {
+                        renderProfileInfo();
                         locationText.textContent = 'Unable to load location';
                     });
             }
@@ -447,6 +459,11 @@
                             window.location.href = '../auth/Login.html?error=Please+login+first';
                             return null;
                         }
+
+                        if (!response.ok) {
+                            throw new Error('Failed to place order');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
@@ -515,7 +532,13 @@
                     credentials: 'same-origin',
                     body: JSON.stringify(payload)
                 })
-                    .then(function (response) { return response.json(); })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Failed to update profile information');
+                        }
+
+                        return response.json();
+                    })
                     .then(function (data) {
                         if (!data || data.ok !== true) {
                             profileFormMessage.textContent = (data && data.message) ? data.message : 'Failed to update information.';
@@ -544,14 +567,12 @@
             var cartItems = readCartItems();
             updateNavCount(cartItems);
             fetchLiveCartItems(cartItems).then(function (liveItems) {
-                if (liveItems.length !== cartItems.length) {
-                    writeCartItems(liveItems);
-                } else {
-                    writeCartItems(liveItems);
-                }
+                writeCartItems(liveItems);
 
                 updateNavCount(liveItems);
                 renderOrderSummary(liveItems);
+            }).catch(function () {
+                renderOrderSummary(cartItems);
             });
             renderProfileInfo();
             loadProfile();

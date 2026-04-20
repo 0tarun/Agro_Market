@@ -266,6 +266,11 @@
                         window.location.href = '../auth/Login.html?error=Please+login+first';
                         return null;
                     }
+
+                    if (!response.ok) {
+                        throw new Error('Failed to load product details');
+                    }
+
                     return response.json();
                 })
                 .then(function (data) {

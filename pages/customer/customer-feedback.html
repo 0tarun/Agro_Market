@@ -48,6 +48,7 @@
             var PROFILE_API_URL = '../../api/customer/customer-checkout-data.php';
             var CHAT_API_URL = '../../api/shared/feedback-chat-data.php';
             var FALLBACK_IMAGE = '../../figma/images (2).jpg';
+            var PROFILE_CACHE_KEY = 'agromarket_customer_profile_cache_v1';
 
             var profileImage = document.getElementById('profileImage');
             var profileName = document.getElementById('profileName');
@@ -71,6 +72,39 @@
                     hour: 'numeric',
                     minute: '2-digit'
                 });
+            }
+
+            function readCachedProfile() {
+                try {
+                    var raw = localStorage.getItem(PROFILE_CACHE_KEY);
+                    if (!raw) {
+                        return null;
+                    }
+
+                    var parsed = JSON.parse(raw);
+                    return parsed && typeof parsed === 'object' ? parsed : null;
+                } catch (_) {
+                    return null;
+                }
+            }
+
+            function writeCachedProfile(data) {
+                try {
+                    localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify({
+                        full_name: String(data.full_name || ''),
+                        address: String(data.address || ''),
+                        profile_image: String(data.profile_image || '')
+                    }));
+                } catch (_) {
+                    // Ignore cache write failures.
+                }
+            }
+
+            function applySidebarProfile(data) {
+                profileName.textContent = data.full_name || 'Customer';
+                profileLocation.textContent = data.address || 'Location not set';
+                profileImage.src = data.profile_image || FALLBACK_IMAGE;
+                profileImage.onerror = function () { profileImage.src = FALLBACK_IMAGE; };
             }
 
             function renderThreads(threads) {
@@ -140,6 +174,11 @@
                             window.location.href = '../auth/Login.html?error=Please+login+first';
                             return null;
                         }
+
+                        if (!response.ok) {
+                            throw new Error('Failed to load profile');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
@@ -147,10 +186,21 @@
                             return;
                         }
 
-                        profileName.textContent = data.full_name || 'Customer';
-                        profileLocation.textContent = data.address || 'Location not set';
-                        profileImage.src = data.profile_image || FALLBACK_IMAGE;
-                        profileImage.onerror = function () { profileImage.src = FALLBACK_IMAGE; };
+                        applySidebarProfile(data);
+                        writeCachedProfile(data);
+                    })
+                    .catch(function () {
+                        var cached = readCachedProfile();
+                        if (cached) {
+                            applySidebarProfile(cached);
+                            return;
+                        }
+
+                        applySidebarProfile({
+                            full_name: 'Customer',
+                            address: 'Location not set',
+                            profile_image: FALLBACK_IMAGE
+                        });
                     });
             }
 
@@ -170,6 +220,11 @@
                             window.location.href = '../auth/Login.html?error=Please+login+first';
                             return null;
                         }
+
+                        if (!response.ok) {
+                            throw new Error('Failed to load threads');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
@@ -183,6 +238,11 @@
                     .catch(function () {
                         renderThreads([]);
                     });
+            }
+
+            var cachedProfile = readCachedProfile();
+            if (cachedProfile) {
+                applySidebarProfile(cachedProfile);
             }
 
             loadProfile();

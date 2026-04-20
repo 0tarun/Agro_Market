@@ -87,6 +87,33 @@ try {
                 exit;
             }
 
+            if ($addressLineInput !== '' && mb_strlen($addressLineInput) > 255) {
+                http_response_code(400);
+                echo json_encode([
+                    'ok' => false,
+                    'message' => 'Address is too long',
+                ]);
+                exit;
+            }
+
+            if ($districtInput !== '' && mb_strlen($districtInput) > 80) {
+                http_response_code(400);
+                echo json_encode([
+                    'ok' => false,
+                    'message' => 'District is too long',
+                ]);
+                exit;
+            }
+
+            if ($divisionInput !== '' && mb_strlen($divisionInput) > 80) {
+                http_response_code(400);
+                echo json_encode([
+                    'ok' => false,
+                    'message' => 'Division is too long',
+                ]);
+                exit;
+            }
+
             $update = $pdo->prepare(
                 'UPDATE users
                  SET full_name = :full_name,
@@ -144,7 +171,7 @@ try {
 
 function toPublicAssetPath(string $rawPath): string
 {
-    $path = trim(str_replace('\\\\', '/', $rawPath));
+    $path = trim(str_replace('\\', '/', $rawPath));
     if ($path === '') {
         $path = '/figma/images (2).jpg';
     }
@@ -154,7 +181,7 @@ function toPublicAssetPath(string $rawPath): string
             $path = '/' . ltrim($path, '/');
         }
 
-        $basePath = trim(str_replace('\\\\', '/', dirname((string)($_SERVER['SCRIPT_NAME'] ?? ''), 3)), '/');
+        $basePath = trim(str_replace('\\', '/', dirname((string)($_SERVER['SCRIPT_NAME'] ?? ''), 3)), '/');
         if ($basePath !== '') {
             $prefix = '/' . $basePath;
             if (strpos($path, $prefix . '/') !== 0 && $path !== $prefix) {

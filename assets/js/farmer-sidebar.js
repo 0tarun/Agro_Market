@@ -87,15 +87,6 @@
         }
     }
 
-    function preloadImage(url) {
-        return new Promise(function (resolve, reject) {
-            var probe = new Image();
-            probe.onload = function () { resolve(url); };
-            probe.onerror = function () { reject(new Error('Image load failed')); };
-            probe.src = url;
-        });
-    }
-
     function applyImageWithFallback(imgEl, desiredUrl) {
         if (!imgEl) {
             return;
@@ -104,17 +95,19 @@
         var fallback = normalizeProfileImage('figma/images (5).jpg');
         var target = normalizeProfileImage(desiredUrl);
 
-        if (imgEl.src === target) {
+        if (!target) {
+            imgEl.src = fallback;
             return;
         }
 
-        preloadImage(target)
-            .then(function () {
-                imgEl.src = target;
-            })
-            .catch(function () {
-                imgEl.src = fallback;
-            });
+        imgEl.onerror = function () {
+            imgEl.onerror = null;
+            imgEl.src = fallback;
+        };
+
+        if (imgEl.src !== target) {
+            imgEl.src = target;
+        }
     }
 
     function applyProfileToSidebar(profile) {

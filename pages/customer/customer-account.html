@@ -90,6 +90,7 @@
             var UPDATE_URL = '../../api/customer/customer-checkout-data.php';
             var IMAGE_UPLOAD_URL = '../../api/customer/customer-update-account.php';
             var FALLBACK_IMAGE = '../../figma/images (2).jpg';
+            var PROFILE_CACHE_KEY = 'agromarket_customer_profile_cache_v1';
             var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
             var ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -137,6 +138,46 @@
                 formStatus.className = 'form-status' + (isError ? ' error' : ' success');
             }
 
+            function readCachedProfile() {
+                try {
+                    var raw = localStorage.getItem(PROFILE_CACHE_KEY);
+                    if (!raw) {
+                        return null;
+                    }
+
+                    var parsed = JSON.parse(raw);
+                    return parsed && typeof parsed === 'object' ? parsed : null;
+                } catch (_) {
+                    return null;
+                }
+            }
+
+            function writeCachedProfile(data) {
+                try {
+                    localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify({
+                        full_name: String(data.full_name || ''),
+                        address: String(data.address || ''),
+                        profile_image: String(data.profile_image || ''),
+                        phone: String(data.phone || ''),
+                        district: String(data.district || ''),
+                        division: String(data.division || ''),
+                        address_line: String(data.address_line || ''),
+                        email: String(data.email || '')
+                    }));
+                } catch (_) {
+                    // Ignore cache write failures.
+                }
+            }
+
+            function applySidebarProfile(data) {
+                profileName.textContent = String(data.full_name || 'Customer');
+                profileLocation.textContent = String(data.address || 'Location not set');
+                profileImage.src = data.profile_image || FALLBACK_IMAGE;
+                profileImage.onerror = function () {
+                    profileImage.src = FALLBACK_IMAGE;
+                };
+            }
+
             function uploadProfileImage(file) {
                 var formData = new FormData();
                 formData.append('profile_image', file);
@@ -150,18 +191,45 @@
                     body: formData
                 })
                     .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+
+                        if (!response.ok) {
+                            throw new Error('Image upload failed');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
+                        if (!data) {
+                            return;
+                        }
+
                         if (!data || !data.ok) {
                             setStatus((data && data.message) ? data.message : 'Image upload failed.', true);
                             return;
                         }
 
-                        profileImage.src = data.profile_image || FALLBACK_IMAGE;
-                        profileImage.onerror = function () {
-                            profileImage.src = FALLBACK_IMAGE;
-                        };
+                        applySidebarProfile({
+                            full_name: profileName.textContent,
+                            address: profileLocation.textContent,
+                            profile_image: data.profile_image || FALLBACK_IMAGE
+                        });
+
+                        var cachedAfterUpload = readCachedProfile() || {};
+                        writeCachedProfile({
+                            full_name: cachedAfterUpload.full_name || profileName.textContent,
+                            address: cachedAfterUpload.address || profileLocation.textContent,
+                            profile_image: data.profile_image || FALLBACK_IMAGE,
+                            phone: cachedAfterUpload.phone || phone.value,
+                            district: cachedAfterUpload.district || district.value,
+                            division: cachedAfterUpload.division || division.value,
+                            address_line: cachedAfterUpload.address_line || addressLine.value,
+                            email: cachedAfterUpload.email || email.value
+                        });
+
                         setStatus(data.message || 'Profile image updated.', false);
                     })
                     .catch(function () {
@@ -177,13 +245,7 @@
                 var fullName = String(data.full_name || '');
                 var names = splitName(fullName);
 
-                profileName.textContent = fullName || 'Customer';
-                profileLocation.textContent = String(data.address || 'Location not set');
-
-                profileImage.src = data.profile_image || FALLBACK_IMAGE;
-                profileImage.onerror = function () {
-                    profileImage.src = FALLBACK_IMAGE;
-                };
+                applySidebarProfile(data);
 
                 email.value = String(data.email || '');
                 firstName.value = names.first;
@@ -192,6 +254,8 @@
                 district.value = String(data.district || '');
                 division.value = String(data.division || '');
                 addressLine.value = String(data.address_line || '');
+
+                writeCachedProfile(data);
             }
 
             function loadProfile() {
@@ -204,6 +268,11 @@
                             window.location.href = '../auth/Login.html?error=Please+login+first';
                             return null;
                         }
+
+                        if (!response.ok) {
+                            throw new Error('Could not load account data');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
@@ -251,6 +320,10 @@
                     })
                 })
                     .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Profile update failed');
+                        }
+
                         return response.json();
                     })
                     .then(function (data) {
@@ -294,6 +367,11 @@
 
                 uploadProfileImage(file);
             });
+
+            var cachedProfile = readCachedProfile();
+            if (cachedProfile) {
+                fillForm(cachedProfile);
+            }
 
             loadProfile();
         })();

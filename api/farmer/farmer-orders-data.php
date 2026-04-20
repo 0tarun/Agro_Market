@@ -132,7 +132,7 @@ try {
 
 function toPublicAssetPath(string $rawPath): string
 {
-    $path = trim(str_replace('\\\\', '/', $rawPath));
+    $path = trim(str_replace('\\', '/', $rawPath));
     if ($path === '') {
         $path = '/figma/images (2).jpg';
     }
@@ -142,7 +142,7 @@ function toPublicAssetPath(string $rawPath): string
             $path = '/' . ltrim($path, '/');
         }
 
-        $basePath = trim(str_replace('\\\\', '/', dirname((string)($_SERVER['SCRIPT_NAME'] ?? ''), 3)), '/');
+        $basePath = trim(str_replace('\\', '/', dirname((string)($_SERVER['SCRIPT_NAME'] ?? ''), 3)), '/');
         if ($basePath !== '') {
             $prefix = '/' . $basePath;
             if (strpos($path, $prefix . '/') !== 0 && $path !== $prefix) {

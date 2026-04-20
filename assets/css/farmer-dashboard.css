@@ -48,6 +48,13 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .profile-block {
