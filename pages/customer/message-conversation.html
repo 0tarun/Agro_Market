@@ -40,7 +40,7 @@
 
     <script>
         (function setupCustomerConversation() {
-            var API_URL = '../../feedback-chat-data.php';
+            var API_URL = '../../api/shared/feedback-chat-data.php';
             var FALLBACK_AVATAR = '../../figma/images (5).jpg';
             var params = new URLSearchParams(window.location.search);
             var threadId = Number(params.get('thread_id') || 0);

@@ -6,10 +6,10 @@
  */
 (function loadSidebarProfile() {
     var profileCacheKey = 'farmerProfileCache';
-    var candidates = ['../../farmer-account-data.php', 'farmer-account-data.php', '/farmer-account-data.php'];
+    var candidates = ['../../api/farmer/farmer-account-data.php', '../../farmer-account-data.php', 'farmer-account-data.php', '/farmer-account-data.php'];
     var pathSegments = window.location.pathname.split('/').filter(Boolean);
     if (pathSegments.length > 0 && pathSegments[0].indexOf('.') === -1) {
-        candidates.push('/' + pathSegments[0] + '/farmer-account-data.php');
+        candidates.push('/' + pathSegments[0] + '/api/farmer/farmer-account-data.php');
     }
 
     function fetchProfile(index) {

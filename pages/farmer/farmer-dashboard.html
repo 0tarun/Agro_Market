@@ -51,7 +51,7 @@
                 </nav>
             </div>
 
-            <a href="../../logout.php" class="logout-btn">Logout</a>
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
         </aside>
 
         <section class="main-panel">
@@ -162,8 +162,8 @@
             var markerIndex = path.indexOf(marker);
             var projectBase = markerIndex >= 0 ? path.slice(0, markerIndex + 1) : '';
             var API_URL = projectBase
-                ? projectBase + 'farmer-dashboard-data.php'
-                : new URL('../../farmer-dashboard-data.php', window.location.href).href;
+                ? projectBase + 'api/farmer/farmer-dashboard-data.php'
+                : new URL('../../api/farmer/farmer-dashboard-data.php', window.location.href).href;
             var LOGIN_URL = projectBase
                 ? projectBase + 'pages/auth/Login.html?error=Please+login+first'
                 : '../auth/Login.html?error=Please+login+first';

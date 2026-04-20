@@ -30,7 +30,7 @@
                 </nav>
             </div>
 
-            <a href="../../logout.php" class="logout-btn">Logout</a>
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
         </aside>
 
         <section class="account-content">
@@ -86,9 +86,9 @@
 
     <script>
         (function setupCustomerAccount() {
-            var API_URL = '../../customer-checkout-data.php';
-            var UPDATE_URL = '../../customer-checkout-data.php';
-            var IMAGE_UPLOAD_URL = '../../customer-update-account.php';
+            var API_URL = '../../api/customer/customer-checkout-data.php';
+            var UPDATE_URL = '../../api/customer/customer-checkout-data.php';
+            var IMAGE_UPLOAD_URL = '../../api/customer/customer-update-account.php';
             var FALLBACK_IMAGE = '../../figma/images (2).jpg';
             var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
             var ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

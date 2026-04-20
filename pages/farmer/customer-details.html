@@ -52,7 +52,7 @@
                 </nav>
             </div>
 
-            <a href="../../logout.php" class="logout-btn">Logout</a>
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
         </aside>
 
         <section class="main-panel customer-main">
@@ -109,8 +109,8 @@
     <script src="../../assets/js/farmer-sidebar.js"></script>
     <script>
         (function setupCustomerDetails() {
-            var API_URL = '../../farmer-order-details-data.php';
-            var ACTION_API_URL = '../../farmer-order-action.php';
+            var API_URL = '../../api/farmer/farmer-order-details-data.php';
+            var ACTION_API_URL = '../../api/farmer/farmer-order-action.php';
             var FALLBACK_AVATAR = '../../figma/images (2).jpg';
             var ORDER_ID_STORAGE_KEY = 'agromarket_farmer_customer_order_id_v1';
 

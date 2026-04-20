@@ -52,7 +52,7 @@
                 </nav>
             </div>
 
-            <a href="../../logout.php" class="logout-btn">Logout</a>
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
         </aside>
 
         <section class="main-panel account-main">
@@ -63,7 +63,7 @@
 
             <div id="toastMessage" class="toast-message" style="display:none;"></div>
 
-            <form class="account-form" action="../../update-farmer-account.php" method="post"
+            <form class="account-form" action="../../api/farmer/update-farmer-account.php" method="post"
                 enctype="multipart/form-data">
                 <div class="field-grid">
                     <div class="wide profile-preview-wrap">
@@ -266,7 +266,7 @@
                 });
             }
 
-            fetch('../../farmer-account-data.php', {
+            fetch('../../api/farmer/farmer-account-data.php', {
                 method: 'GET',
                 credentials: 'same-origin'
             })

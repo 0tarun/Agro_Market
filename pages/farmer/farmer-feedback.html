@@ -52,7 +52,7 @@
                 </nav>
             </div>
 
-            <a href="../../logout.php" class="logout-btn">Logout</a>
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
         </aside>
 
         <section class="main-panel feedback-main">
@@ -65,7 +65,7 @@
     <script src="../../assets/js/farmer-sidebar.js"></script>
     <script>
         (function setupFarmerFeedback() {
-            var API_URL = '../../feedback-chat-data.php';
+            var API_URL = '../../api/shared/feedback-chat-data.php';
             var FALLBACK_AVATAR = '../../figma/images (2).jpg';
             var listEl = document.getElementById('feedbackList');
             var emptyEl = document.getElementById('feedbackEmptyState');

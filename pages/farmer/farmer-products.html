@@ -52,7 +52,7 @@
                 </nav>
             </div>
 
-            <a href="../../logout.php" class="logout-btn">Logout</a>
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
         </aside>
 
         <section class="main-panel products-main">
@@ -125,7 +125,7 @@
     <script>
         (function setupProductPage() {
             var DEFAULT_IMAGE = '../../figma/images (5).jpg';
-            var API_URL = '../../farmer-products-handler.php';
+            var API_URL = '../../api/farmer/farmer-products-handler.php';
 
             var form = document.getElementById('productForm');
             var uploadBtn = document.getElementById('uploadBtn');

@@ -29,7 +29,7 @@
                 </nav>
             </div>
 
-            <a href="../../logout.php" class="logout-btn">Logout</a>
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
         </aside>
 
         <section class="account-content feedback-content">
@@ -45,8 +45,8 @@
 
     <script>
         (function setupCustomerFeedback() {
-            var PROFILE_API_URL = '../../customer-checkout-data.php';
-            var CHAT_API_URL = '../../feedback-chat-data.php';
+            var PROFILE_API_URL = '../../api/customer/customer-checkout-data.php';
+            var CHAT_API_URL = '../../api/shared/feedback-chat-data.php';
             var FALLBACK_IMAGE = '../../figma/images (2).jpg';
 
             var profileImage = document.getElementById('profileImage');
