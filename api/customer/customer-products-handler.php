@@ -6,42 +6,48 @@ require_once __DIR__ . '/../../config/database.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+$rawInput = json_decode((string)file_get_contents('php://input'), true) ?? [];
+$action = strtolower(trim((string)($rawInput['action'] ?? 'list_products')));
+
 $userId = (int)($_SESSION['user_id'] ?? 0);
-if ($userId <= 0) {
-    http_response_code(401);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Please login first'
-    ]);
-    exit;
-}
+$isAuthenticated = $userId > 0;
+$canCheckout = false;
+$role = '';
 
 try {
-    $stmt = $pdo->prepare('SELECT role, is_active FROM users WHERE id = :id LIMIT 1');
-    $stmt->execute([':id' => $userId]);
-    $user = $stmt->fetch();
+    if ($isAuthenticated) {
+        $stmt = $pdo->prepare('SELECT role, is_active FROM users WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $userId]);
+        $user = $stmt->fetch();
 
-    if (!$user || (int)$user['is_active'] !== 1) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'User not found or inactive']);
-        exit;
+        if (!$user || (int)$user['is_active'] !== 1) {
+            $isAuthenticated = false;
+        } else {
+            $role = strtolower(trim((string)($user['role'] ?? '')));
+            if ($role === 'customer') {
+                $role = 'consumer';
+            }
+        }
     }
 
-    $role = strtolower(trim((string)($user['role'] ?? '')));
-    if ($role === 'customer') {
-        $role = 'consumer';
-    }
-
-    if ($role !== 'consumer') {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Only customers can access this']);
-        exit;
-    }
-
-    $rawInput = json_decode((string)file_get_contents('php://input'), true) ?? [];
-    $action = strtolower(trim((string)($rawInput['action'] ?? 'list_products')));
+    $canCheckout = $isAuthenticated && $role === 'consumer';
 
     if ($action === 'product_detail') {
+        if (!$isAuthenticated) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Please login first'
+            ]);
+            exit;
+        }
+
+        if (!$canCheckout) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Only customers can access this']);
+            exit;
+        }
+
         $productId = (int)($rawInput['product_id'] ?? 0);
         handleProductDetail($pdo, $productId);
         exit;
@@ -145,6 +151,8 @@ try {
 
     echo json_encode([
         'success' => true,
+        'authenticated' => $isAuthenticated,
+        'can_checkout' => $canCheckout,
         'products' => $products,
         'categories' => array_values(array_unique($categories)),
         'trusted_farmers' => $trustedFarmers,

@@ -32,12 +32,12 @@
             </nav>
 
             <div class="nav-auth">
-                <a href="view-cart.html" class="nav-cart" aria-label="Cart">
+                <a id="navCartLink" href="view-cart.html" class="nav-cart" aria-label="Cart">
                     <span class="nav-cart-icon" aria-hidden="true">&#128722;</span>
                     <span id="navCartCount" class="nav-cart-count">0</span>
                 </a>
-                <a href="customer-account.html" class="btn-login">My Account</a>
-                <a href="../../api/auth/logout.php" class="btn-register">Logout</a>
+                <a id="navPrimaryBtn" href="../auth/Login.html" class="btn-login">Login</a>
+                <a id="navSecondaryBtn" href="../auth/Registration.html" class="btn-register">Sign Up</a>
             </div>
         </div>
     </header>
@@ -122,15 +122,52 @@
             var searchText = '';
             var productsCache = [];
             var filteredProductsCache = [];
+            var canCheckout = false;
 
             var chipsWrap = document.getElementById('categoryChips');
             var productGrid = document.getElementById('productGrid');
             var emptyProducts = document.getElementById('emptyProducts');
             var seeMoreBtn = document.getElementById('seeMoreBtn');
             var productSearchInput = document.getElementById('productSearchInput');
+            var navCartLink = document.getElementById('navCartLink');
             var navCartCount = document.getElementById('navCartCount');
+            var navPrimaryBtn = document.getElementById('navPrimaryBtn');
+            var navSecondaryBtn = document.getElementById('navSecondaryBtn');
             var trustedFarmersGrid = document.getElementById('trustedFarmersGrid');
             var trustedFarmersEmpty = document.getElementById('trustedFarmersEmpty');
+
+            function updateNavByAuthState() {
+                if (canCheckout) {
+                    if (navCartLink) {
+                        navCartLink.style.display = 'inline-flex';
+                    }
+
+                    if (navPrimaryBtn) {
+                        navPrimaryBtn.textContent = 'My Account';
+                        navPrimaryBtn.href = 'customer-account.html';
+                    }
+
+                    if (navSecondaryBtn) {
+                        navSecondaryBtn.textContent = 'Logout';
+                        navSecondaryBtn.href = '../../api/auth/logout.php';
+                    }
+                    return;
+                }
+
+                if (navCartLink) {
+                    navCartLink.style.display = 'none';
+                }
+
+                if (navPrimaryBtn) {
+                    navPrimaryBtn.textContent = 'Login';
+                    navPrimaryBtn.href = '../auth/Login.html';
+                }
+
+                if (navSecondaryBtn) {
+                    navSecondaryBtn.textContent = 'Sign Up';
+                    navSecondaryBtn.href = '../auth/Registration.html';
+                }
+            }
 
             function readCartItems() {
                 try {
@@ -200,7 +237,7 @@
                 meta.innerHTML =
                     '<span>' + (product.category || 'Uncategorized') + '</span>' +
                     '<span>৳' + Number(product.price || 0).toFixed(2) + '</span>' +
-                    '<span>' + (product.pricing_label || 'Full Price') + '</span>';
+                    '<span>' + (product.pricing_label || 'Fresh') + '</span>';
 
                 var footer = document.createElement('div');
                 footer.className = 'card-footer';
@@ -216,6 +253,11 @@
                 checkoutBtn.className = 'checkout-btn';
                 checkoutBtn.textContent = 'Checkout';
                 checkoutBtn.addEventListener('click', function () {
+                    if (!canCheckout) {
+                        window.location.href = '../auth/Login.html?error=Please+login+or+sign+up+to+view+product+details';
+                        return;
+                    }
+
                     var pid = Number(product.id || 0);
                     if (pid > 0) {
                         window.location.href = 'product-details.html?id=' + encodeURIComponent(String(pid));
@@ -327,11 +369,6 @@
                     })
                 })
                     .then(function (response) {
-                        if (response.status === 401) {
-                            window.location.href = '../auth/Login.html?error=Please+login+first';
-                            return null;
-                        }
-
                         if (!response.ok) {
                             throw new Error('Failed to load marketplace');
                         }
@@ -350,6 +387,9 @@
                             seeMoreBtn.style.display = 'none';
                             return;
                         }
+
+                        canCheckout = data.can_checkout === true;
+                        updateNavByAuthState();
 
                         productsCache = Array.isArray(data.products) ? data.products : [];
                         renderChips(Array.isArray(data.categories) ? data.categories : ['All']);
@@ -387,9 +427,11 @@
             });
 
             updateCartCount();
+            updateNavByAuthState();
             loadMarketplace();
         })();
     </script>
+    <script src="../../assets/js/customer-navbar-auth.js"></script>
 </body>
 
 </html>

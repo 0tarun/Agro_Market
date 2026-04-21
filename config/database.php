@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 $host = '127.0.0.1';
@@ -77,27 +78,15 @@ function calculatePerishableProductPricing(array $product, ?DateTimeInterface $n
             'age_days' => $ageDays,
             'base_price' => round($basePrice, 2),
             'effective_price' => round($basePrice, 2),
-            'discount_percent' => 100,
+            'discount_percent' => 0,
             'pricing_status' => 'expired',
             'pricing_label' => 'Expired',
             'is_expired' => true,
+            'is_purchasable' => false,
         ];
     }
 
-    if ($ageDays >= 6) {
-        $effectivePrice = round($basePrice * 0.6, 2);
-        return [
-            'age_days' => $ageDays,
-            'base_price' => round($basePrice, 2),
-            'effective_price' => $effectivePrice,
-            'discount_percent' => 40,
-            'pricing_status' => 'clearance',
-            'pricing_label' => '40% Discount',
-            'is_expired' => false,
-        ];
-    }
-
-    if ($ageDays >= 3) {
+    if ($ageDays >= 3 && $ageDays <= 6) {
         $effectivePrice = round($basePrice * 0.8, 2);
         return [
             'age_days' => $ageDays,
@@ -105,8 +94,9 @@ function calculatePerishableProductPricing(array $product, ?DateTimeInterface $n
             'effective_price' => $effectivePrice,
             'discount_percent' => 20,
             'pricing_status' => 'discounted',
-            'pricing_label' => '20% Discount',
+            'pricing_label' => 'Discounted',
             'is_expired' => false,
+            'is_purchasable' => true,
         ];
     }
 
@@ -115,8 +105,9 @@ function calculatePerishableProductPricing(array $product, ?DateTimeInterface $n
         'base_price' => round($basePrice, 2),
         'effective_price' => round($basePrice, 2),
         'discount_percent' => 0,
-        'pricing_status' => 'full_price',
-        'pricing_label' => 'Full Price',
+        'pricing_status' => 'fresh',
+        'pricing_label' => 'Fresh',
         'is_expired' => false,
+        'is_purchasable' => true,
     ];
 }

@@ -241,6 +241,10 @@ try {
                 </div>
 
                 <nav class="menu" aria-label="Sidebar menu">
+                    <a href="index.html" class="menu-item">
+                        <span class="menu-icon">&#8962;</span>
+                        Home
+                    </a>
                     <a href="pages/farmer/farmer-dashboard.html" class="menu-item">
                         <span class="menu-icon">&#9638;</span>
                         Overview
@@ -353,8 +357,7 @@ try {
                             data-product-stock="<?php echo htmlspecialchars((string)$product['stock_qty']); ?>"
                             data-category-id="<?php echo htmlspecialchars((string)($product['category_id'] ?? '')); ?>"
                             data-category-name="<?php echo htmlspecialchars($product['category_name'] ?? ''); ?>"
-                            data-harvest-date="<?php echo htmlspecialchars((string)($product['harvest_date'] ?? '')); ?>"
-                        >
+                            data-harvest-date="<?php echo htmlspecialchars((string)($product['harvest_date'] ?? '')); ?>">
                             <div class="image-col">
                                 <img src="<?php echo htmlspecialchars($product['image_path'] ?? '/figma/images (2).jpg'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" />
                             </div>

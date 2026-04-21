@@ -291,7 +291,7 @@
                     productImage.src = product.image_path || FALLBACK_PRODUCT;
                     productImage.onerror = function () { productImage.src = FALLBACK_PRODUCT; };
                     pricePerKilo.textContent = '৳' + productPrice.toFixed(2) + ' per kilo';
-                    pricingStatus.textContent = product.pricing_label || 'Full Price';
+                    pricingStatus.textContent = product.pricing_label || 'Fresh';
 
                     farmerImage.src = product.farmer_profile_image || FALLBACK_FARMER;
                     farmerImage.onerror = function () { farmerImage.src = FALLBACK_FARMER; };
@@ -325,6 +325,7 @@
             updateCartCount();
         })();
     </script>
+    <script src="../../assets/js/customer-navbar-auth.js"></script>
 </body>
 
 </html>

@@ -28,12 +28,33 @@ body {
   padding: 20px 24px 140px;
 }
 
+.conversation-top-links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .back-link {
   color: #f0f4ee;
   text-decoration: none;
   font-size: 2rem;
   line-height: 1;
   display: inline-block;
+}
+
+.home-link {
+  text-decoration: none;
+  color: #f3f8ee;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(111, 150, 73, 0.9);
+}
+
+.home-link:hover {
+  background: #7ca757;
 }
 
 .profile-area {
