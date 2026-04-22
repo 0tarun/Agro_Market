@@ -160,6 +160,7 @@ try {
         'district' => $district,
         'division' => $division,
         'address' => $parts ? implode(', ', $parts) : 'Location not set',
+        'shipping_fee_default' => getDefaultShippingFee(),
     ]);
 } catch (Throwable $e) {
     http_response_code(500);

@@ -40,6 +40,10 @@
                         <span class="menu-icon">&#9745;</span>
                         Orders
                     </a>
+                    <a href="farmer-shipment.html" class="menu-item">
+                        <span class="menu-icon">&#128230;</span>
+                        Shipments
+                    </a>
                     <a href="farmer-feedback.html" class="menu-item">
                         <span class="menu-icon">&#9993;</span>
                         Feedback
@@ -99,35 +103,37 @@
                 </article>
             </section>
 
-            <section class="panel message-panel">
-                <div class="panel-head">
-                    <h3>Messages from buyers</h3>
-                    <a href="farmer-feedback.html" class="panel-link">Open Inbox</a>
-                </div>
-                <div id="spotlightMessage" class="message-row">
-                    <div class="message-left">
-                        <img src="../../figma/images (2).jpg" alt="Buyer" class="message-avatar" />
-                        <div>
-                            <p class="message-text">No messages yet.</p>
-                            <p class="message-meta">Your latest buyer chat will appear here.</p>
-                        </div>
+            <div class="overview-content-grid">
+                <section class="panel message-panel">
+                    <div class="panel-head">
+                        <h3>Messages from buyers</h3>
+                        <a href="farmer-feedback.html" class="panel-link">Open Inbox</a>
                     </div>
-                    <a href="farmer-feedback.html" class="reply-btn">Reply</a>
-                </div>
-            </section>
+                    <div id="spotlightMessage" class="message-row">
+                        <div class="message-left">
+                            <img src="../../figma/images (2).jpg" alt="Buyer" class="message-avatar" />
+                            <div>
+                                <p class="message-text">No messages yet.</p>
+                                <p class="message-meta">Your latest buyer chat will appear here.</p>
+                            </div>
+                        </div>
+                        <a href="farmer-feedback.html" class="reply-btn">Reply</a>
+                    </div>
+                </section>
 
-            <section class="panel product-panel">
-                <div class="panel-head">
-                    <h3>Top Products in 2026</h3>
-                    <a href="farmer-products.html" class="panel-link">Manage Products</a>
-                </div>
-                <div id="topProductsGrid" class="products-grid"></div>
-            </section>
+                <section class="panel product-panel">
+                    <div class="panel-head">
+                        <h3>Top Products in 2026</h3>
+                        <a href="farmer-products.html" class="panel-link">Manage Products</a>
+                    </div>
+                    <div id="topProductsGrid" class="products-grid"></div>
+                </section>
+            </div>
 
             <section class="panel order-panel">
                 <div class="order-head">
                     <h3>Latest Orders</h3>
-                    <div style="display:flex; gap:8px; align-items:center;">
+                    <div class="order-tools">
                         <span class="panel-link" style="cursor:default;">Customize</span>
                         <span class="panel-link" style="cursor:default;">Filter</span>
                         <span class="panel-link" style="cursor:default;">Export</span>

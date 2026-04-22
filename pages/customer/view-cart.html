@@ -61,7 +61,7 @@
             <aside class="cart-summary">
                 <h3>DETAILS</h3>
                 <p><span>Subtotal</span> <strong id="subtotalAmount">৳0.00</strong></p>
-                <p><span>Shipping</span> <strong>Free</strong></p>
+                <p><span>Shipping</span> <strong id="shippingAmount">৳0.00</strong></p>
                 <hr />
                 <p class="total"><span>Total</span> <strong id="totalAmount">৳0.00</strong></p>
                 <button id="checkoutBtn" type="button" class="checkout-main-btn">Check out</button>
@@ -113,14 +113,39 @@
         (function setupViewCart() {
             var CART_STORAGE_KEY = 'agromarket_cart_v1';
             var API_URL = '../../api/customer/customer-products-handler.php';
+            var CHECKOUT_API_URL = '../../api/customer/customer-checkout-data.php';
             var FALLBACK_IMAGE = '../../figma/images (2).jpg';
 
             var cartItemsWrap = document.getElementById('cartItems');
             var emptyCart = document.getElementById('emptyCart');
             var subtotalAmount = document.getElementById('subtotalAmount');
+            var shippingAmount = document.getElementById('shippingAmount');
             var totalAmount = document.getElementById('totalAmount');
             var navCartCount = document.getElementById('navCartCount');
             var checkoutBtn = document.getElementById('checkoutBtn');
+            var shippingFee = 60;
+
+            function loadShippingFee() {
+                return fetch(CHECKOUT_API_URL, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            return null;
+                        }
+
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data && data.ok === true) {
+                            shippingFee = Math.max(0, Number(data.shipping_fee_default || shippingFee));
+                        }
+                    })
+                    .catch(function () {
+                        return null;
+                    });
+            }
 
             function readCartItems() {
                 try {
@@ -208,9 +233,11 @@
                 var subtotal = items.reduce(function (sum, item) {
                     return sum + Number(item.price || 0) * Number(item.qty || 0);
                 }, 0);
+                var shipping = items.length ? shippingFee : 0;
 
                 subtotalAmount.textContent = '৳' + subtotal.toFixed(2);
-                totalAmount.textContent = '৳' + subtotal.toFixed(2);
+                shippingAmount.textContent = '৳' + shipping.toFixed(2);
+                totalAmount.textContent = '৳' + (subtotal + shipping).toFixed(2);
             }
 
             function changeQty(productId, delta) {
@@ -337,7 +364,7 @@
                 }
             });
 
-            renderCart();
+            loadShippingFee().finally(renderCart);
         })();
     </script>
     <script src="../../assets/js/customer-navbar-auth.js"></script>

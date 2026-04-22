@@ -87,7 +87,7 @@
 
                 <div class="totals">
                     <p><span>Subtotal:</span><strong id="subtotalAmount">৳0.00</strong></p>
-                    <p><span>Shipping:</span><strong>Free</strong></p>
+                    <p><span>Shipping:</span><strong id="shippingAmount">৳0.00</strong></p>
                     <p class="total"><span>Total:</span><strong id="totalAmount">৳0.00</strong></p>
                 </div>
 
@@ -203,6 +203,7 @@
             var summaryItems = document.getElementById('summaryItems');
             var emptySummary = document.getElementById('emptySummary');
             var subtotalAmount = document.getElementById('subtotalAmount');
+            var shippingAmount = document.getElementById('shippingAmount');
             var totalAmount = document.getElementById('totalAmount');
             var placeOrderBtn = document.getElementById('placeOrderBtn');
             var checkoutMessage = document.getElementById('checkoutMessage');
@@ -219,6 +220,7 @@
             var profileDivision = document.getElementById('profileDivision');
             var profileFormMessage = document.getElementById('profileFormMessage');
             var liveCartItems = [];
+            var shippingFee = 60;
 
             var profileState = {
                 full_name: 'Customer',
@@ -318,6 +320,7 @@
                 if (!items.length) {
                     emptySummary.style.display = 'block';
                     subtotalAmount.textContent = '৳0.00';
+                    shippingAmount.textContent = '৳0.00';
                     totalAmount.textContent = '৳0.00';
                     placeOrderBtn.disabled = true;
                     return;
@@ -354,7 +357,8 @@
                 });
 
                 subtotalAmount.textContent = '৳' + subtotal.toFixed(2);
-                totalAmount.textContent = '৳' + subtotal.toFixed(2);
+                shippingAmount.textContent = '৳' + shippingFee.toFixed(2);
+                totalAmount.textContent = '৳' + (subtotal + shippingFee).toFixed(2);
             }
 
             function renderOrderSummary(items) {
@@ -422,7 +426,9 @@
                         profileState.district = data.district || '';
                         profileState.division = data.division || '';
                         profileState.address = data.address || composeAddress(profileState.address_line, profileState.district, profileState.division);
+                        shippingFee = Math.max(0, Number(data.shipping_fee_default || shippingFee));
                         renderProfileInfo();
+                        renderOrderSummaryWithItems(liveCartItems);
                     })
                     .catch(function () {
                         renderProfileInfo();

@@ -29,6 +29,7 @@ $input = json_decode((string)file_get_contents('php://input'), true) ?? [];
 $items = is_array($input['items'] ?? null) ? $input['items'] : [];
 $paymentMethod = strtolower(trim((string)($input['payment_method'] ?? 'cash')));
 $shippingAddress = trim((string)($input['shipping_address'] ?? ''));
+$shippingFeeDefault = getDefaultShippingFee();
 
 $allowedMethods = ['cash', 'nagad', 'bkash', 'bank_transfer'];
 if (!in_array($paymentMethod, $allowedMethods, true)) {
@@ -173,8 +174,8 @@ try {
     }
 
     $insertOrder = $pdo->prepare(
-        'INSERT INTO orders (order_code, consumer_id, farmer_id, status, payment_status, payment_method, total_amount, shipping_address)
-         VALUES (:order_code, :consumer_id, :farmer_id, :status, :payment_status, :payment_method, :total_amount, :shipping_address)'
+        'INSERT INTO orders (order_code, consumer_id, farmer_id, status, payment_status, payment_method, items_subtotal, shipping_fee, total_amount, shipping_address)
+            VALUES (:order_code, :consumer_id, :farmer_id, :status, :payment_status, :payment_method, :items_subtotal, :shipping_fee, :total_amount, :shipping_address)'
     );
 
     $insertItem = $pdo->prepare(
@@ -191,10 +192,13 @@ try {
     $createdOrders = [];
 
     foreach ($byFarmer as $farmerId => $farmerItems) {
-        $orderTotal = 0.0;
+        $itemsSubtotal = 0.0;
         foreach ($farmerItems as $line) {
-            $orderTotal += (float)$line['line_total'];
+            $itemsSubtotal += (float)$line['line_total'];
         }
+
+        $shippingFee = $shippingFeeDefault;
+        $orderTotal = $itemsSubtotal + $shippingFee;
 
         $orderCode = generateOrderCode($pdo);
         $insertOrder->execute([
@@ -204,6 +208,8 @@ try {
             ':status' => 'pending',
             ':payment_status' => 'pending',
             ':payment_method' => $paymentMethod,
+            ':items_subtotal' => $itemsSubtotal,
+            ':shipping_fee' => $shippingFee,
             ':total_amount' => $orderTotal,
             ':shipping_address' => ($shippingAddress === '' ? null : mb_substr($shippingAddress, 0, 255)),
         ]);
@@ -230,6 +236,8 @@ try {
             'order_id' => $orderId,
             'order_code' => $orderCode,
             'farmer_id' => (int)$farmerId,
+            'items_subtotal' => $itemsSubtotal,
+            'shipping_fee' => $shippingFee,
             'total_amount' => $orderTotal,
         ];
     }

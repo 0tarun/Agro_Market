@@ -24,6 +24,7 @@ try {
 
 ensurePerishableProductSchema($pdo);
 ensureProductRatingSchema($pdo);
+ensureOrderShippingSchema($pdo);
 
 require_once __DIR__ . '/../api/shared/shipment-migrate.php';
 ensureShipmentSchema($pdo);
@@ -144,4 +145,48 @@ function ensureProductRatingSchema(PDO $pdo): void
             INDEX idx_product_ratings_consumer (consumer_id)
         ) ENGINE=InnoDB'
     );
+}
+
+function ensureOrderShippingSchema(PDO $pdo): void
+{
+    static $hasRun = false;
+    if ($hasRun) {
+        return;
+    }
+
+    $hasRun = true;
+
+    $subtotalColStmt = $pdo->prepare(
+        'SELECT COUNT(*) AS total
+         FROM information_schema.columns
+         WHERE table_schema = DATABASE()
+           AND table_name = "orders"
+           AND column_name = "items_subtotal"'
+    );
+    $subtotalColStmt->execute();
+    $hasSubtotalCol = (int)($subtotalColStmt->fetch()['total'] ?? 0) > 0;
+
+    if (!$hasSubtotalCol) {
+        $pdo->exec('ALTER TABLE orders ADD COLUMN items_subtotal DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER payment_method');
+        $pdo->exec('UPDATE orders SET items_subtotal = total_amount WHERE items_subtotal = 0');
+    }
+
+    $shippingFeeColStmt = $pdo->prepare(
+        'SELECT COUNT(*) AS total
+         FROM information_schema.columns
+         WHERE table_schema = DATABASE()
+           AND table_name = "orders"
+           AND column_name = "shipping_fee"'
+    );
+    $shippingFeeColStmt->execute();
+    $hasShippingFeeCol = (int)($shippingFeeColStmt->fetch()['total'] ?? 0) > 0;
+
+    if (!$hasShippingFeeCol) {
+        $pdo->exec('ALTER TABLE orders ADD COLUMN shipping_fee DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER items_subtotal');
+    }
+}
+
+function getDefaultShippingFee(): float
+{
+    return 60.00;
 }
