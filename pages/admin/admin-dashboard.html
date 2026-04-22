@@ -451,7 +451,11 @@
 
                     var meta = document.createElement('div');
                     meta.className = 'product-meta';
-                    meta.textContent = (item.farmer_name || 'Farmer') + ' • Sold ' + Number(item.sold_qty || 0) + ' • Stock ' + Number(item.stock_qty || 0);
+                    meta.textContent =
+                        (item.farmer_name || 'Farmer') +
+                        ' • Sold ' + Number(item.sold_qty || 0) +
+                        ' • Stock ' + Number(item.stock_qty || 0) +
+                        ' • Rating ' + Number(item.rating_avg || 0).toFixed(1) + ' (' + Number(item.rating_count || 0) + ')';
 
                     var status = document.createElement('div');
                     status.style.marginTop = '10px';

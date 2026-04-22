@@ -23,6 +23,7 @@ try {
 }
 
 ensurePerishableProductSchema($pdo);
+ensureProductRatingSchema($pdo);
 
 require_once __DIR__ . '/../api/shared/shipment-migrate.php';
 ensureShipmentSchema($pdo);
@@ -113,4 +114,34 @@ function calculatePerishableProductPricing(array $product, ?DateTimeInterface $n
         'is_expired' => false,
         'is_purchasable' => true,
     ];
+}
+
+function ensureProductRatingSchema(PDO $pdo): void
+{
+    static $hasRun = false;
+    if ($hasRun) {
+        return;
+    }
+
+    $hasRun = true;
+
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS product_ratings (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            product_id BIGINT UNSIGNED NOT NULL,
+            consumer_id BIGINT UNSIGNED NOT NULL,
+            rating TINYINT UNSIGNED NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            CONSTRAINT fk_product_ratings_product
+                FOREIGN KEY (product_id) REFERENCES products(id)
+                ON DELETE CASCADE,
+            CONSTRAINT fk_product_ratings_consumer
+                FOREIGN KEY (consumer_id) REFERENCES users(id)
+                ON DELETE CASCADE,
+            CONSTRAINT uq_product_ratings_pair UNIQUE KEY (product_id, consumer_id),
+            INDEX idx_product_ratings_product (product_id),
+            INDEX idx_product_ratings_consumer (consumer_id)
+        ) ENGINE=InnoDB'
+    );
 }

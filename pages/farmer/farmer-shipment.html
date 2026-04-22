@@ -172,6 +172,8 @@
         (function setupFarmerShipment() {
             var API_URL = '../../api/farmer/farmer-shipment-action.php';
             var STATUSES = ['preparing', 'shipped', 'in_transit', 'out_for_delivery', 'delivered'];
+            var SHIPMENT_ORDER_ID_STORAGE_KEY = 'agromarket_farmer_shipment_order_id_v1';
+            var SHIPMENT_ORDER_ID_STORAGE_KEY_LEGACY = 'agromarket_farmer_shipment_order_id';
 
             var orderCodeBadge = document.getElementById('orderCodeBadge');
             var infoCustomer = document.getElementById('infoCustomer');
@@ -196,7 +198,10 @@
             var params = new URLSearchParams(window.location.search);
             var orderId = Number(params.get('order_id') || 0);
             if (orderId <= 0) {
-                orderId = Number(sessionStorage.getItem('agromarket_farmer_shipment_order_id') || 0);
+                orderId = Number(sessionStorage.getItem(SHIPMENT_ORDER_ID_STORAGE_KEY) || 0);
+            }
+            if (orderId <= 0) {
+                orderId = Number(sessionStorage.getItem(SHIPMENT_ORDER_ID_STORAGE_KEY_LEGACY) || 0);
             }
 
             if (orderId <= 0) {
@@ -385,8 +390,9 @@
             });
 
             try {
-                sessionStorage.setItem('agromarket_farmer_shipment_order_id', String(orderId));
-            } catch (_) {}
+                sessionStorage.setItem(SHIPMENT_ORDER_ID_STORAGE_KEY, String(orderId));
+                sessionStorage.setItem(SHIPMENT_ORDER_ID_STORAGE_KEY_LEGACY, String(orderId));
+            } catch (_) { }
 
             loadShipment();
         })();

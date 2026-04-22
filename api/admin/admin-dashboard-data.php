@@ -135,9 +135,12 @@ try {
             p.stock_qty,
             p.is_active,
             u.full_name AS farmer_name,
+            COALESCE(ROUND(AVG(r.rating), 2), 0) AS rating_avg,
+            COUNT(r.id) AS rating_count,
             COALESCE(SUM(CASE WHEN o.status = "completed" THEN oi.qty ELSE 0 END), 0) AS sold_qty
          FROM products p
          INNER JOIN users u ON u.id = p.farmer_id
+         LEFT JOIN product_ratings r ON r.product_id = p.id
          LEFT JOIN order_items oi ON oi.product_id = p.id
          LEFT JOIN orders o ON o.id = oi.order_id
          GROUP BY p.id, p.name, p.image_path, p.stock_qty, p.is_active, u.full_name
@@ -307,6 +310,8 @@ function formatProducts(array $rows): array
             'stock_qty' => (int) ($row['stock_qty'] ?? 0),
             'is_active' => (int) ($row['is_active'] ?? 0) === 1,
             'sold_qty' => (float) ($row['sold_qty'] ?? 0),
+            'rating_avg' => (float) ($row['rating_avg'] ?? 0),
+            'rating_count' => (int) ($row['rating_count'] ?? 0),
         ];
     }
 

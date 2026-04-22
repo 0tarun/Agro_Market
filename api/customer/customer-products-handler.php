@@ -32,6 +32,28 @@ try {
 
     $canCheckout = $isAuthenticated && $role === 'consumer';
 
+    if ($action === 'submit_rating') {
+        if (!$isAuthenticated) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Please login first',
+            ]);
+            exit;
+        }
+
+        if (!$canCheckout) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Only customers can submit ratings']);
+            exit;
+        }
+
+        $productId = (int)($rawInput['product_id'] ?? 0);
+        $rating = (int)($rawInput['rating'] ?? 0);
+        handleSubmitProductRating($pdo, $userId, $productId, $rating);
+        exit;
+    }
+
     if ($action === 'product_detail') {
         if (!$isAuthenticated) {
             http_response_code(401);
@@ -49,7 +71,7 @@ try {
         }
 
         $productId = (int)($rawInput['product_id'] ?? 0);
-        handleProductDetail($pdo, $productId);
+        handleProductDetail($pdo, $productId, $userId);
         exit;
     }
 
@@ -79,6 +101,10 @@ try {
     $stmt = $pdo->prepare($productsSql);
     $stmt->execute($params);
     $rows = $stmt->fetchAll() ?: [];
+    $productIds = array_map(static function (array $row): int {
+        return (int)($row['id'] ?? 0);
+    }, $rows);
+    $ratingMap = getProductRatingsSummary($pdo, $productIds);
 
     $products = [];
     foreach ($rows as $row) {
@@ -103,6 +129,8 @@ try {
             'category' => (string)($row['category_name'] ?? 'Uncategorized'),
             'farmer_name' => (string)($row['farmer_name'] ?? 'Local Farmer'),
             'image_path' => toPublicAssetPath((string)($row['image_path'] ?? '')),
+            'rating_avg' => (float)($ratingMap[(int)($row['id'] ?? 0)]['rating_avg'] ?? 0),
+            'rating_count' => (int)($ratingMap[(int)($row['id'] ?? 0)]['rating_count'] ?? 0),
         ];
     }
 
@@ -189,7 +217,7 @@ function toPublicAssetPath(string $rawPath): string
     return $path;
 }
 
-function handleProductDetail(PDO $pdo, int $productId): void
+function handleProductDetail(PDO $pdo, int $productId, int $userId): void
 {
     if ($productId <= 0) {
         http_response_code(400);
@@ -245,6 +273,10 @@ function handleProductDetail(PDO $pdo, int $productId): void
         return;
     }
 
+    $ratingSummary = getProductRatingsSummary($pdo, [$productId]);
+    $ratingData = $ratingSummary[$productId] ?? ['rating_avg' => 0, 'rating_count' => 0];
+    $userRating = getUserProductRating($pdo, $productId, $userId);
+
     echo json_encode([
         'success' => true,
         'product' => [
@@ -264,6 +296,136 @@ function handleProductDetail(PDO $pdo, int $productId): void
             'farmer_name' => (string)($row['farmer_name'] ?? 'Local Farmer'),
             'farmer_profile_image' => toPublicAssetPath((string)($row['farmer_profile_image'] ?? '/figma/images (5).jpg')),
             'farmer_location' => $parts ? implode(', ', $parts) : 'Location not set',
+            'rating_avg' => (float)($ratingData['rating_avg'] ?? 0),
+            'rating_count' => (int)($ratingData['rating_count'] ?? 0),
+            'user_rating' => $userRating,
         ],
     ]);
+}
+
+function handleSubmitProductRating(PDO $pdo, int $userId, int $productId, int $rating): void
+{
+    if ($productId <= 0) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid product id',
+        ]);
+        return;
+    }
+
+    if ($rating < 1 || $rating > 5) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Rating must be between 1 and 5',
+        ]);
+        return;
+    }
+
+    $productStmt = $pdo->prepare(
+        'SELECT p.id
+         FROM products p
+         INNER JOIN users u ON u.id = p.farmer_id
+         WHERE p.id = :product_id
+           AND p.is_active = 1
+           AND u.is_active = 1
+           AND LOWER(u.role) = "farmer"
+         LIMIT 1'
+    );
+    $productStmt->execute([':product_id' => $productId]);
+    if (!$productStmt->fetch()) {
+        http_response_code(404);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Product not found',
+        ]);
+        return;
+    }
+
+    $saveStmt = $pdo->prepare(
+        'INSERT INTO product_ratings (product_id, consumer_id, rating)
+         VALUES (:product_id, :consumer_id, :rating)
+         ON DUPLICATE KEY UPDATE rating = VALUES(rating), updated_at = CURRENT_TIMESTAMP'
+    );
+    $saveStmt->execute([
+        ':product_id' => $productId,
+        ':consumer_id' => $userId,
+        ':rating' => $rating,
+    ]);
+
+    $ratingSummary = getProductRatingsSummary($pdo, [$productId]);
+    $ratingData = $ratingSummary[$productId] ?? ['rating_avg' => 0, 'rating_count' => 0];
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Rating saved successfully',
+        'rating' => [
+            'rating_avg' => (float)($ratingData['rating_avg'] ?? 0),
+            'rating_count' => (int)($ratingData['rating_count'] ?? 0),
+            'user_rating' => $rating,
+        ],
+    ]);
+}
+
+function getProductRatingsSummary(PDO $pdo, array $productIds): array
+{
+    $ids = array_values(array_unique(array_filter(array_map('intval', $productIds), static function (int $id): bool {
+        return $id > 0;
+    })));
+
+    if (!$ids) {
+        return [];
+    }
+
+    $placeholders = [];
+    $params = [];
+    foreach ($ids as $index => $id) {
+        $key = ':pid_' . $index;
+        $placeholders[] = $key;
+        $params[$key] = $id;
+    }
+
+    $stmt = $pdo->prepare(
+        'SELECT product_id, ROUND(AVG(rating), 2) AS rating_avg, COUNT(*) AS rating_count
+         FROM product_ratings
+         WHERE product_id IN (' . implode(', ', $placeholders) . ')
+         GROUP BY product_id'
+    );
+    $stmt->execute($params);
+
+    $map = [];
+    foreach (($stmt->fetchAll() ?: []) as $row) {
+        $pid = (int)($row['product_id'] ?? 0);
+        if ($pid > 0) {
+            $map[$pid] = [
+                'rating_avg' => (float)($row['rating_avg'] ?? 0),
+                'rating_count' => (int)($row['rating_count'] ?? 0),
+            ];
+        }
+    }
+
+    return $map;
+}
+
+function getUserProductRating(PDO $pdo, int $productId, int $userId): int
+{
+    if ($productId <= 0 || $userId <= 0) {
+        return 0;
+    }
+
+    $stmt = $pdo->prepare(
+        'SELECT rating
+         FROM product_ratings
+         WHERE product_id = :product_id
+           AND consumer_id = :consumer_id
+         LIMIT 1'
+    );
+    $stmt->execute([
+        ':product_id' => $productId,
+        ':consumer_id' => $userId,
+    ]);
+    $row = $stmt->fetch();
+
+    return (int)($row['rating'] ?? 0);
 }

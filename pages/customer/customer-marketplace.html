@@ -239,6 +239,13 @@
                     '<span>৳' + Number(product.price || 0).toFixed(2) + '</span>' +
                     '<span>' + (product.pricing_label || 'Fresh') + '</span>';
 
+                var rating = document.createElement('div');
+                rating.className = 'card-rating';
+                rating.innerHTML =
+                    '<span class="rating-star">&#9733;</span>' +
+                    '<span class="rating-value">' + Number(product.rating_avg || 0).toFixed(1) + '</span>' +
+                    '<span class="rating-count">(' + Number(product.rating_count || 0) + ')</span>';
+
                 var footer = document.createElement('div');
                 footer.className = 'card-footer';
                 var stock = document.createElement('small');
@@ -269,6 +276,7 @@
                 card.appendChild(imageWrap);
                 card.appendChild(title);
                 card.appendChild(meta);
+                card.appendChild(rating);
                 card.appendChild(footer);
                 card.appendChild(actions);
 

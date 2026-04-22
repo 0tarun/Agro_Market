@@ -85,6 +85,22 @@ FOREIGN KEY (product_id) REFERENCES products(id)
 ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+CREATE TABLE product_ratings (
+id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+product_id BIGINT UNSIGNED NOT NULL,
+consumer_id BIGINT UNSIGNED NOT NULL,
+rating TINYINT UNSIGNED NOT NULL,
+created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+CONSTRAINT fk_product_ratings_product
+FOREIGN KEY (product_id) REFERENCES products(id)
+ON DELETE CASCADE,
+CONSTRAINT fk_product_ratings_consumer
+FOREIGN KEY (consumer_id) REFERENCES users(id)
+ON DELETE CASCADE,
+UNIQUE KEY uq_product_ratings_pair (product_id, consumer_id)
+) ENGINE=InnoDB;
+
 CREATE TABLE message_threads (
 id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 farmer_id BIGINT UNSIGNED NOT NULL,
@@ -134,6 +150,7 @@ CREATE INDEX idx_products_category ON products(category_id);
 CREATE INDEX idx_orders_farmer_status ON orders(farmer_id, status);
 CREATE INDEX idx_orders_consumer ON orders(consumer_id);
 CREATE INDEX idx_order_items_order ON order_items(order_id);
+CREATE INDEX idx_product_ratings_product ON product_ratings(product_id);
 CREATE INDEX idx_threads_farmer ON message_threads(farmer_id);
 CREATE INDEX idx_messages_thread_created ON messages(thread_id, created_at);
 CREATE INDEX idx_support_farmer_status ON support_tickets(farmer_id, status);

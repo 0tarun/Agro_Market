@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farmer Help and Support - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/farmer-dashboard.css" />
+    <link rel="stylesheet" href="../../assets/css/farmer-help-support.css" />
+</head>
+
+<body>
+    <main class="dashboard-page">
+        <aside class="sidebar">
+            <div>
+                <div class="profile-block">
+                    <img id="sidebarProfileImage" src="../../figma/images (5).jpg" alt="Farmer profile"
+                        class="profile-image" />
+                    <h2 id="sidebarProfileName" class="profile-name">My Farmer Account</h2>
+                    <p id="sidebarProfileLocation" class="profile-location">Loading...</p>
+                </div>
+
+                <nav class="menu" aria-label="Sidebar menu">
+                    <a href="../../index.html" class="menu-item">
+                        <span class="menu-icon">&#8962;</span>
+                        Home
+                    </a>
+                    <a href="farmer-dashboard.html" class="menu-item">
+                        <span class="menu-icon">&#9638;</span>
+                        Overview
+                    </a>
+                    <a href="farmer-products.html" class="menu-item">
+                        <span class="menu-icon">&#9635;</span>
+                        Products
+                    </a>
+                    <a href="farmer-orders.html" class="menu-item">
+                        <span class="menu-icon">&#9745;</span>
+                        Orders
+                    </a>
+                    <a href="farmer-feedback.html" class="menu-item">
+                        <span class="menu-icon">&#9993;</span>
+                        Feedback
+                    </a>
+                    <a href="farmer-help-support.html" class="menu-item active">
+                        <span class="menu-icon">?</span>
+                        Help and Support
+                    </a>
+                    <a href="farmer-account.html" class="menu-item">
+                        <span class="menu-icon">&#9787;</span>
+                        Account
+                    </a>
+                </nav>
+            </div>
+
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="main-panel support-main">
+            <header class="support-head">
+                <h1>Help &amp; Support</h1>
+                <p>Submit issues and track support updates from the AgroMarket team.</p>
+            </header>
+
+            <section class="panel support-form-panel">
+                <h2>New Support Ticket</h2>
+                <form id="supportForm" novalidate>
+                    <label for="supportMessage" class="support-label">Describe your issue</label>
+                    <textarea id="supportMessage" class="support-textarea" rows="5"
+                        placeholder="Example: Order shipment status is not updating after confirmation."
+                        maxlength="1200" required></textarea>
+                    <div class="support-actions">
+                        <button id="supportSubmitBtn" type="submit" class="support-submit-btn">Submit Ticket</button>
+                        <p id="supportMessageState" class="support-message-state"></p>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel support-history-panel">
+                <div class="support-history-head">
+                    <h2>Recent Tickets</h2>
+                    <button id="refreshTicketsBtn" type="button" class="refresh-btn">Refresh</button>
+                </div>
+                <div id="ticketList" class="ticket-list" aria-live="polite"></div>
+                <p id="ticketEmptyState" class="ticket-empty">No support tickets submitted yet.</p>
+            </section>
+        </section>
+    </main>
+
+    <script src="../../assets/js/farmer-sidebar.js"></script>
+    <script>
+        (function setupFarmerSupport() {
+            var API_URL = '../../api/farmer/farmer-help-support-data.php';
+
+            var supportForm = document.getElementById('supportForm');
+            var supportMessage = document.getElementById('supportMessage');
+            var supportSubmitBtn = document.getElementById('supportSubmitBtn');
+            var supportMessageState = document.getElementById('supportMessageState');
+            var ticketList = document.getElementById('ticketList');
+            var ticketEmptyState = document.getElementById('ticketEmptyState');
+            var refreshTicketsBtn = document.getElementById('refreshTicketsBtn');
+
+            function formatDate(raw) {
+                if (!raw) {
+                    return '-';
+                }
+
+                var date = new Date(raw);
+                if (Number.isNaN(date.getTime())) {
+                    return raw;
+                }
+
+                return date.toLocaleString([], {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            }
+
+            function setState(message, isError) {
+                supportMessageState.textContent = message || '';
+                supportMessageState.className = 'support-message-state' + (isError ? ' error' : '');
+            }
+
+            function renderTickets(tickets) {
+                ticketList.innerHTML = '';
+
+                if (!Array.isArray(tickets) || !tickets.length) {
+                    ticketEmptyState.style.display = 'block';
+                    return;
+                }
+
+                ticketEmptyState.style.display = 'none';
+
+                tickets.forEach(function (ticket) {
+                    var item = document.createElement('article');
+                    item.className = 'ticket-item';
+
+                    var header = document.createElement('div');
+                    header.className = 'ticket-item-head';
+                    header.innerHTML =
+                        '<strong>Ticket #' + Number(ticket.id || 0) + '</strong>' +
+                        '<span class="ticket-status ' + String(ticket.status || 'open') + '">' + (ticket.status_label || 'Open') + '</span>';
+
+                    var body = document.createElement('p');
+                    body.className = 'ticket-body';
+                    body.textContent = ticket.message_text || '';
+
+                    var meta = document.createElement('p');
+                    meta.className = 'ticket-meta';
+                    meta.textContent = 'Created: ' + formatDate(ticket.created_at || '') + ' | Updated: ' + formatDate(ticket.updated_at || '');
+
+                    item.appendChild(header);
+                    item.appendChild(body);
+                    item.appendChild(meta);
+                    ticketList.appendChild(item);
+                });
+            }
+
+            function loadTickets() {
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ action: 'list_tickets' })
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = '../auth/Login.html?error=Please+login+first';
+                            return null;
+                        }
+
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || data.ok !== true) {
+                            renderTickets([]);
+                            return;
+                        }
+
+                        renderTickets(Array.isArray(data.tickets) ? data.tickets : []);
+                    })
+                    .catch(function () {
+                        renderTickets([]);
+                    });
+            }
+
+            refreshTicketsBtn.addEventListener('click', function () {
+                loadTickets();
+            });
+
+            supportForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                var message = supportMessage.value.trim();
+                if (message.length < 8) {
+                    setState('Please write at least 8 characters before submitting.', true);
+                    return;
+                }
+
+                supportSubmitBtn.disabled = true;
+                setState('Submitting ticket...', false);
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'create_ticket',
+                        message_text: message
+                    })
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            return response.json()
+                                .then(function (data) {
+                                    throw new Error((data && data.message) || 'Failed to submit ticket');
+                                })
+                                .catch(function () {
+                                    throw new Error('Failed to submit ticket');
+                                });
+                        }
+
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || data.ok !== true) {
+                            throw new Error((data && data.message) || 'Failed to submit ticket');
+                        }
+
+                        supportMessage.value = '';
+                        setState(data.message || 'Support ticket submitted successfully', false);
+                        renderTickets(Array.isArray(data.tickets) ? data.tickets : []);
+                    })
+                    .catch(function (error) {
+                        setState((error && error.message) ? error.message : 'Failed to submit ticket', true);
+                    })
+                    .finally(function () {
+                        supportSubmitBtn.disabled = false;
+                    });
+            });
+
+            loadTickets();
+        })();
+    </script>
+</body>
+
+</html>

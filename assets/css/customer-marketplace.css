@@ -181,6 +181,31 @@ body {
   display: block;
 }
 
+.card-rating {
+  margin-top: 7px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #f3e39a;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.rating-star {
+  color: #ffcf5a;
+  font-size: 0.78rem;
+}
+
+.rating-value {
+  color: #fff3c7;
+}
+
+.rating-count {
+  color: #d9e6d2;
+  font-weight: 500;
+}
+
 .card-footer small {
   color: #d9e6d2;
   font-size: 0.64rem;

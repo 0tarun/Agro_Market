@@ -68,6 +68,25 @@
                     <p id="productCategory" class="category-tag">CATEGORY</p>
                     <h1 id="productName">Product</h1>
 
+                    <div class="product-rating-box" aria-live="polite">
+                        <p id="productRatingSummary" class="product-rating-summary">Rating: 0.0 / 5 (0 reviews)</p>
+                        <div id="productRatingStars" class="product-rating-stars" aria-hidden="true"></div>
+                        <div class="product-rating-form" role="group" aria-label="Rate this product">
+                            <button type="button" class="rate-star-btn" data-rating="1"
+                                aria-label="Rate 1 star">&#9733;</button>
+                            <button type="button" class="rate-star-btn" data-rating="2"
+                                aria-label="Rate 2 stars">&#9733;</button>
+                            <button type="button" class="rate-star-btn" data-rating="3"
+                                aria-label="Rate 3 stars">&#9733;</button>
+                            <button type="button" class="rate-star-btn" data-rating="4"
+                                aria-label="Rate 4 stars">&#9733;</button>
+                            <button type="button" class="rate-star-btn" data-rating="5"
+                                aria-label="Rate 5 stars">&#9733;</button>
+                            <button id="submitRatingBtn" type="button" class="submit-rating-btn">Submit Rating</button>
+                        </div>
+                        <p id="ratingMessage" class="rating-message"></p>
+                    </div>
+
                     <div class="qty-row" aria-label="Quantity">
                         <button id="minusQty" type="button">-</button>
                         <span id="qtyValue">1</span>
@@ -161,10 +180,40 @@
             var addToCartBtn = document.getElementById('addToCartBtn');
             var messageFarmerLink = document.getElementById('messageFarmerLink');
             var navCartCount = document.getElementById('navCartCount');
+            var productRatingSummary = document.getElementById('productRatingSummary');
+            var productRatingStars = document.getElementById('productRatingStars');
+            var submitRatingBtn = document.getElementById('submitRatingBtn');
+            var ratingMessage = document.getElementById('ratingMessage');
+            var rateStarButtons = Array.prototype.slice.call(document.querySelectorAll('.rate-star-btn'));
 
             var qty = 1;
             var productPrice = 0;
             var currentProduct = null;
+            var selectedRating = 0;
+
+            function updateRatingSummary(avg, count) {
+                var safeAvg = Number(avg || 0);
+                var safeCount = Number(count || 0);
+                productRatingSummary.textContent = 'Rating: ' + safeAvg.toFixed(1) + ' / 5 (' + safeCount + ' reviews)';
+
+                var rounded = Math.round(safeAvg);
+                var stars = '';
+                for (var i = 1; i <= 5; i += 1) {
+                    stars += '<span class="' + (i <= rounded ? 'filled' : 'empty') + '">&#9733;</span>';
+                }
+                productRatingStars.innerHTML = stars;
+            }
+
+            function renderSelectedStars() {
+                rateStarButtons.forEach(function (btn) {
+                    var value = Number(btn.getAttribute('data-rating') || 0);
+                    if (value <= selectedRating) {
+                        btn.classList.add('selected');
+                    } else {
+                        btn.classList.remove('selected');
+                    }
+                });
+            }
 
             function readCartItems() {
                 try {
@@ -225,7 +274,7 @@
 
                 writeCartItems(cartItems);
                 updateCartCount();
-                detailsMessage.textContent = 'Product cart এ add হয়েছে।';
+                detailsMessage.textContent = 'Product added to cart.';
                 detailsMessage.classList.remove('error');
             });
 
@@ -239,6 +288,77 @@
             plusQty.addEventListener('click', function () {
                 qty += 1;
                 updateQty();
+            });
+
+            rateStarButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    selectedRating = Number(btn.getAttribute('data-rating') || 0);
+                    renderSelectedStars();
+                    ratingMessage.textContent = '';
+                    ratingMessage.classList.remove('error');
+                });
+            });
+
+            submitRatingBtn.addEventListener('click', function () {
+                if (!currentProduct || Number(currentProduct.id || 0) <= 0) {
+                    ratingMessage.textContent = 'Product not loaded yet.';
+                    ratingMessage.classList.add('error');
+                    return;
+                }
+
+                if (selectedRating < 1 || selectedRating > 5) {
+                    ratingMessage.textContent = 'Please select a rating from 1 to 5 stars.';
+                    ratingMessage.classList.add('error');
+                    return;
+                }
+
+                submitRatingBtn.disabled = true;
+                ratingMessage.textContent = 'Submitting rating...';
+                ratingMessage.classList.remove('error');
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'submit_rating',
+                        product_id: Number(currentProduct.id || 0),
+                        rating: selectedRating
+                    })
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            return response.json()
+                                .then(function (data) {
+                                    throw new Error((data && data.message) || 'Failed to submit rating');
+                                })
+                                .catch(function () {
+                                    throw new Error('Failed to submit rating');
+                                });
+                        }
+
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.success || !data.rating) {
+                            throw new Error((data && data.message) || 'Failed to submit rating');
+                        }
+
+                        updateRatingSummary(data.rating.rating_avg, data.rating.rating_count);
+                        selectedRating = Number(data.rating.user_rating || selectedRating);
+                        renderSelectedStars();
+                        ratingMessage.textContent = 'Thanks! Your rating has been saved.';
+                        ratingMessage.classList.remove('error');
+                    })
+                    .catch(function (error) {
+                        ratingMessage.textContent = (error && error.message) ? error.message : 'Failed to submit rating.';
+                        ratingMessage.classList.add('error');
+                    })
+                    .finally(function () {
+                        submitRatingBtn.disabled = false;
+                    });
             });
 
             var params = new URLSearchParams(window.location.search);
@@ -307,6 +427,9 @@
                     productCategory.textContent = String(product.category || 'Uncategorized').toUpperCase();
                     productName.textContent = product.name || 'Product';
                     stockStatus.textContent = 'Available (' + String(product.stock || 0) + ')';
+                    updateRatingSummary(product.rating_avg || 0, product.rating_count || 0);
+                    selectedRating = Number(product.user_rating || 0);
+                    renderSelectedStars();
 
                     updateQty();
                     updateCartCount();
