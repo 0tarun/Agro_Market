@@ -80,7 +80,7 @@ try {
     $_SESSION['user_role'] = $role;
 
     if ($role === 'admin') {
-        header('Location: ../../pages/customer/customer-marketplace.html');
+        header('Location: ../../pages/admin/admin-dashboard.html');
         exit;
     }
 

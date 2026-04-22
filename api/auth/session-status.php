@@ -14,6 +14,7 @@ if ($userId <= 0) {
         'role' => null,
         'is_customer' => false,
         'is_farmer' => false,
+        'is_admin' => false,
     ]);
     exit;
 }
@@ -30,6 +31,7 @@ try {
             'role' => null,
             'is_customer' => false,
             'is_farmer' => false,
+            'is_admin' => false,
         ]);
         exit;
     }
@@ -45,6 +47,7 @@ try {
         'role' => $role,
         'is_customer' => $role === 'consumer',
         'is_farmer' => $role === 'farmer',
+        'is_admin' => $role === 'admin',
     ]);
 } catch (Throwable $e) {
     http_response_code(500);

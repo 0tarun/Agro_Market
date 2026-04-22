@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/admin-dashboard.css" />
+</head>
+
+<body>
+    <main class="dashboard-shell">
+        <aside class="sidebar">
+            <div>
+                <div class="profile-block">
+                    <h2 id="sidebarProfileName" class="profile-name">Admin Console</h2>
+                    <p id="sidebarProfileLocation" class="profile-subtitle">Live platform monitoring</p>
+                    <div class="admin-chip">System Admin</div>
+                </div>
+
+                <nav class="menu" aria-label="Admin navigation">
+                    <a href="#overview" class="menu-item active">
+                        <span class="menu-icon">&#9638;</span>
+                        Overview
+                    </a>
+                    <a href="#users" class="menu-item">
+                        <span class="menu-icon">&#9787;</span>
+                        Users
+                    </a>
+                    <a href="#farmers" class="menu-item">
+                        <span class="menu-icon">&#127806;</span>
+                        Farmers
+                    </a>
+                    <a href="#customers" class="menu-item">
+                        <span class="menu-icon">&#128100;</span>
+                        Customers
+                    </a>
+                    <a href="#products" class="menu-item">
+                        <span class="menu-icon">&#9635;</span>
+                        Products
+                    </a>
+                    <a href="#orders" class="menu-item">
+                        <span class="menu-icon">&#9745;</span>
+                        Orders
+                    </a>
+                    <a href="#support" class="menu-item">
+                        <span class="menu-icon">&#9993;</span>
+                        Support
+                    </a>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="../../index.html" class="ghost-btn">View Site</a>
+                <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
+            </div>
+        </aside>
+
+        <section class="main-panel">
+            <header class="page-head" id="overview">
+                <div>
+                    <h1 class="page-title">Admin <span>Dashboard</span></h1>
+                    <p id="dashboardSubline" class="page-subtitle">Monitoring farmers, customers, products, orders,
+                        support tickets, and live activity from a single control center.</p>
+                </div>
+                <div class="headline-actions">
+                    <a href="#users" class="action-pill">User Health</a>
+                    <a href="#orders" class="action-pill">Order Flow</a>
+                    <a href="#support" class="action-pill">Support Queue</a>
+                </div>
+            </header>
+
+            <section class="stats-grid">
+                <article class="stat-card">
+                    <div class="stat-accent">&#9787;</div>
+                    <p class="stat-label">Total Users</p>
+                    <p id="statUsers" class="stat-value">0</p>
+                    <p class="stat-meta">Farmers, customers, and admins combined</p>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-accent">&#127806;</div>
+                    <p class="stat-label">Farmers</p>
+                    <p id="statFarmers" class="stat-value">0</p>
+                    <p class="stat-meta">Active sellers on the platform</p>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-accent">&#128100;</div>
+                    <p class="stat-label">Customers</p>
+                    <p id="statCustomers" class="stat-value">0</p>
+                    <p class="stat-meta">Registered buyers and shoppers</p>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-accent">&#9635;</div>
+                    <p class="stat-label">Products</p>
+                    <p id="statProducts" class="stat-value">0</p>
+                    <p class="stat-meta">Listed product records</p>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-accent">&#9745;</div>
+                    <p class="stat-label">Orders</p>
+                    <p id="statOrders" class="stat-value">0</p>
+                    <p class="stat-meta">Marketplace order volume</p>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-accent">&#2547;</div>
+                    <p class="stat-label">Revenue</p>
+                    <p id="statRevenue" class="stat-value">৳0</p>
+                    <p class="stat-meta">Completed order revenue</p>
+                </article>
+            </section>
+
+            <section class="layout-grid">
+                <article class="panel" id="users">
+                    <div class="panel-head">
+                        <h2>Platform Health</h2>
+                        <a href="#orders" class="panel-link">View Orders</a>
+                    </div>
+
+                    <div class="mini-grid">
+                        <div class="mini-card">
+                            <div class="label">Active Users</div>
+                            <div id="statActiveUsers" class="value">0</div>
+                        </div>
+                        <div class="mini-card">
+                            <div class="label">Unread Messages</div>
+                            <div id="statUnreadMessages" class="value">0</div>
+                        </div>
+                        <div class="mini-card">
+                            <div class="label">Open Tickets</div>
+                            <div id="statOpenTickets" class="value">0</div>
+                        </div>
+                        <div class="mini-card">
+                            <div class="label">Inactive Users</div>
+                            <div id="statInactiveUsers" class="value">0</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-list" id="orderStatusBreakdown"></div>
+                </article>
+
+                <article class="panel" id="support">
+                    <div class="panel-head">
+                        <h2>Support Queue</h2>
+                        <span class="panel-link" style="cursor:default;">Live</span>
+                    </div>
+                    <div id="supportTicketsList" class="ticket-list">
+                        <p class="empty-copy">Loading support queue...</p>
+                    </div>
+                </article>
+            </section>
+
+            <section class="panel data-panel" id="farmers">
+                <div class="panel-head">
+                    <h2>Recent Farmers</h2>
+                    <a href="#customers" class="panel-link">Jump to Customers</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Farmer</th>
+                                <th>Contact</th>
+                                <th>Location</th>
+                                <th>Products</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="farmersBody">
+                            <tr>
+                                <td colspan="7">Loading farmer data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel data-panel" id="customers">
+                <div class="panel-head">
+                    <h2>Recent Customers</h2>
+                    <a href="#products" class="panel-link">Jump to Products</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>Location</th>
+                                <th>Orders</th>
+                                <th>Spent</th>
+                                <th>Last Order</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersBody">
+                            <tr>
+                                <td colspan="7">Loading customer data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel data-panel" id="products">
+                <div class="panel-head">
+                    <h2>Top Products</h2>
+                    <a href="#orders" class="panel-link">Jump to Orders</a>
+                </div>
+                <div id="productsGrid" class="product-grid">
+                    <p class="empty-copy">Loading product data...</p>
+                </div>
+            </section>
+
+            <section class="panel data-panel" id="orders">
+                <div class="panel-head">
+                    <h2>Latest Orders</h2>
+                    <a href="#overview" class="panel-link">Back to Top</a>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Farmer</th>
+                                <th>Payment</th>
+                                <th>Amount</th>
+                                <th>Placed</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersBody">
+                            <tr>
+                                <td colspan="7">Loading order data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="footer-note">This dashboard is backed by live database queries and refreshes on page load.</p>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        (function setupAdminDashboard() {
+            var marker = '/pages/admin/';
+            var path = String(window.location.pathname || '');
+            var markerIndex = path.indexOf(marker);
+            var projectBase = markerIndex >= 0 ? path.slice(0, markerIndex + 1) : '';
+            var API_URL = projectBase
+                ? projectBase + 'api/admin/admin-dashboard-data.php'
+                : new URL('../../api/admin/admin-dashboard-data.php', window.location.href).href;
+            var LOGIN_URL = projectBase
+                ? projectBase + 'pages/auth/Login.html?error=Please+login+first'
+                : '../auth/Login.html?error=Please+login+first';
+            var FALLBACK_IMAGE = '../../figma/images (2).jpg';
+
+            var statUsers = document.getElementById('statUsers');
+            var statFarmers = document.getElementById('statFarmers');
+            var statCustomers = document.getElementById('statCustomers');
+            var statProducts = document.getElementById('statProducts');
+            var statOrders = document.getElementById('statOrders');
+            var statRevenue = document.getElementById('statRevenue');
+            var statActiveUsers = document.getElementById('statActiveUsers');
+            var statUnreadMessages = document.getElementById('statUnreadMessages');
+            var statOpenTickets = document.getElementById('statOpenTickets');
+            var statInactiveUsers = document.getElementById('statInactiveUsers');
+            var orderStatusBreakdown = document.getElementById('orderStatusBreakdown');
+            var supportTicketsList = document.getElementById('supportTicketsList');
+            var farmersBody = document.getElementById('farmersBody');
+            var customersBody = document.getElementById('customersBody');
+            var productsGrid = document.getElementById('productsGrid');
+            var ordersBody = document.getElementById('ordersBody');
+            var dashboardSubline = document.getElementById('dashboardSubline');
+
+            function setLoadError(message) {
+                var copy = message || 'Failed to load admin dashboard data.';
+                if (dashboardSubline) {
+                    dashboardSubline.textContent = copy;
+                }
+
+                farmersBody.innerHTML = '<tr><td colspan="7">' + copy + '</td></tr>';
+                customersBody.innerHTML = '<tr><td colspan="7">' + copy + '</td></tr>';
+                ordersBody.innerHTML = '<tr><td colspan="7">' + copy + '</td></tr>';
+                productsGrid.innerHTML = '<p class="empty-copy">' + copy + '</p>';
+                supportTicketsList.innerHTML = '<p class="empty-copy">' + copy + '</p>';
+                orderStatusBreakdown.innerHTML = '';
+            }
+
+            function formatDate(raw) {
+                if (!raw) {
+                    return '-';
+                }
+
+                var date = new Date(raw);
+                if (Number.isNaN(date.getTime())) {
+                    return raw;
+                }
+
+                return date.toLocaleString([], {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            }
+
+            function formatCurrency(value) {
+                return '৳' + Number(value || 0).toFixed(2);
+            }
+
+            function applyStats(stats) {
+                var totalUsers = Number((stats && stats.total_users) || 0);
+                var totalFarmers = Number((stats && stats.total_farmers) || 0);
+                var totalCustomers = Number((stats && stats.total_customers) || 0);
+                var totalProductsValue = Number((stats && stats.total_products) || 0);
+                var totalOrdersValue = Number((stats && stats.total_orders) || 0);
+                var totalRevenueValue = Number((stats && stats.total_revenue) || 0);
+
+                statUsers.textContent = String(totalUsers);
+                statFarmers.textContent = String(totalFarmers);
+                statCustomers.textContent = String(totalCustomers);
+                statProducts.textContent = String(totalProductsValue);
+                statOrders.textContent = String(totalOrdersValue);
+                statRevenue.textContent = formatCurrency(totalRevenueValue);
+
+                statActiveUsers.textContent = String(Number((stats && stats.active_users) || 0));
+                statUnreadMessages.textContent = String(Number((stats && stats.unread_messages) || 0));
+                statOpenTickets.textContent = String(Number((stats && stats.open_tickets) || 0));
+                statInactiveUsers.textContent = String(Math.max(totalUsers - Number((stats && stats.active_users) || 0), 0));
+
+                var breakdown = [
+                    { label: 'Pending Orders', value: Number((stats && stats.pending_orders) || 0), className: 'pending' },
+                    { label: 'To Receive', value: Number((stats && stats.to_receive_orders) || 0), className: 'receive' },
+                    { label: 'Completed', value: Number((stats && stats.completed_orders) || 0), className: 'completed' },
+                    { label: 'Refund / Return', value: Number((stats && stats.refund_orders) || 0), className: 'refund' },
+                    { label: 'Cancelled', value: Number((stats && stats.cancelled_orders) || 0), className: 'cancelled' }
+                ];
+
+                var maxValue = 0;
+                breakdown.forEach(function (item) {
+                    maxValue = Math.max(maxValue, item.value);
+                });
+
+                orderStatusBreakdown.innerHTML = '';
+                breakdown.forEach(function (item) {
+                    var wrap = document.createElement('div');
+                    wrap.className = 'progress-item';
+
+                    var row = document.createElement('div');
+                    row.className = 'row';
+                    row.innerHTML = '<span>' + item.label + '</span><span class="tag ' + item.className + '">' + item.value + '</span>';
+
+                    var bar = document.createElement('div');
+                    bar.className = 'bar';
+
+                    var fill = document.createElement('div');
+                    fill.className = 'bar-fill';
+                    fill.style.width = maxValue > 0 ? Math.max((item.value / maxValue) * 100, 8) + '%' : '0%';
+
+                    bar.appendChild(fill);
+                    wrap.appendChild(row);
+                    wrap.appendChild(bar);
+                    orderStatusBreakdown.appendChild(wrap);
+                });
+            }
+
+            function renderFarmers(items) {
+                farmersBody.innerHTML = '';
+
+                if (!Array.isArray(items) || !items.length) {
+                    farmersBody.innerHTML = '<tr><td colspan="7">No farmer data available.</td></tr>';
+                    return;
+                }
+
+                items.forEach(function (item) {
+                    var row = document.createElement('tr');
+                    row.innerHTML =
+                        '<td>' +
+                        '<div class="user-cell">' +
+                        '<img class="avatar" src="' + (item.profile_image || FALLBACK_IMAGE) + '" alt="Farmer" onerror="this.src=\'' + FALLBACK_IMAGE + '\'" />' +
+                        '<div><strong>' + (item.name || 'Farmer') + '</strong><div class="muted">' + (item.email || '') + '</div></div>' +
+                        '</div>' +
+                        '</td>' +
+                        '<td>' + (item.phone || '-') + '</td>' +
+                        '<td>' + ((item.district || item.division) ? [item.district, item.division].filter(Boolean).join(', ') : '-') + '</td>' +
+                        '<td>' + Number(item.product_count || 0) + '</td>' +
+                        '<td>' + Number(item.order_count || 0) + '</td>' +
+                        '<td>' + formatCurrency(item.revenue || 0) + '</td>' +
+                        '<td><span class="tag ' + (item.is_active ? 'completed' : 'cancelled') + '">' + (item.status_label || 'Active') + '</span></td>';
+
+                    farmersBody.appendChild(row);
+                });
+            }
+
+            function renderCustomers(items) {
+                customersBody.innerHTML = '';
+
+                if (!Array.isArray(items) || !items.length) {
+                    customersBody.innerHTML = '<tr><td colspan="7">No customer data available.</td></tr>';
+                    return;
+                }
+
+                items.forEach(function (item) {
+                    var row = document.createElement('tr');
+                    row.innerHTML =
+                        '<td>' +
+                        '<div class="user-cell">' +
+                        '<img class="avatar" src="' + (item.profile_image || FALLBACK_IMAGE) + '" alt="Customer" onerror="this.src=\'' + FALLBACK_IMAGE + '\'" />' +
+                        '<div><strong>' + (item.name || 'Customer') + '</strong><div class="muted">' + (item.email || '') + '</div></div>' +
+                        '</div>' +
+                        '</td>' +
+                        '<td>' + (item.phone || '-') + '</td>' +
+                        '<td>' + ((item.district || item.division) ? [item.district, item.division].filter(Boolean).join(', ') : '-') + '</td>' +
+                        '<td>' + Number(item.order_count || 0) + '</td>' +
+                        '<td>' + formatCurrency(item.spent || 0) + '</td>' +
+                        '<td>' + formatDate(item.last_order_at || item.created_at || '') + '</td>' +
+                        '<td><span class="tag ' + (item.is_active ? 'completed' : 'cancelled') + '">' + (item.status_label || 'Active') + '</span></td>';
+
+                    customersBody.appendChild(row);
+                });
+            }
+
+            function renderProducts(items) {
+                productsGrid.innerHTML = '';
+
+                if (!Array.isArray(items) || !items.length) {
+                    productsGrid.innerHTML = '<p class="empty-copy">No product data available.</p>';
+                    return;
+                }
+
+                items.forEach(function (item) {
+                    var card = document.createElement('article');
+                    card.className = 'product-card';
+
+                    var img = document.createElement('img');
+                    img.className = 'product-thumb';
+                    img.src = item.image_path || FALLBACK_IMAGE;
+                    img.alt = item.name || 'Product';
+                    img.onerror = function () { img.src = FALLBACK_IMAGE; };
+
+                    var title = document.createElement('div');
+                    title.className = 'product-name';
+                    title.textContent = item.name || 'Product';
+
+                    var meta = document.createElement('div');
+                    meta.className = 'product-meta';
+                    meta.textContent = (item.farmer_name || 'Farmer') + ' • Sold ' + Number(item.sold_qty || 0) + ' • Stock ' + Number(item.stock_qty || 0);
+
+                    var status = document.createElement('div');
+                    status.style.marginTop = '10px';
+                    status.innerHTML = '<span class="tag ' + (item.is_active ? 'completed' : 'cancelled') + '">' + (item.is_active ? 'Active' : 'Inactive') + '</span>';
+
+                    card.appendChild(img);
+                    card.appendChild(title);
+                    card.appendChild(meta);
+                    card.appendChild(status);
+                    productsGrid.appendChild(card);
+                });
+            }
+
+            function renderOrders(items) {
+                ordersBody.innerHTML = '';
+
+                if (!Array.isArray(items) || !items.length) {
+                    ordersBody.innerHTML = '<tr><td colspan="7">No order data available.</td></tr>';
+                    return;
+                }
+
+                items.forEach(function (item) {
+                    var row = document.createElement('tr');
+                    row.innerHTML =
+                        '<td>#' + (item.order_code || '-') + '</td>' +
+                        '<td>' + (item.customer_name || 'Customer') + '</td>' +
+                        '<td>' + (item.farmer_name || 'Farmer') + '</td>' +
+                        '<td>' + (item.payment_status || 'Pending') + '<div class="muted">' + (item.payment_method || '-') + '</div></td>' +
+                        '<td>' + formatCurrency(item.amount || 0) + '</td>' +
+                        '<td>' + formatDate(item.placed_at || '') + '</td>' +
+                        '<td><span class="tag ' + (item.status_class || 'pending') + '">' + (item.status_label || 'Pending') + '</span></td>';
+
+                    ordersBody.appendChild(row);
+                });
+            }
+
+            function renderTickets(items) {
+                supportTicketsList.innerHTML = '';
+
+                if (!Array.isArray(items) || !items.length) {
+                    supportTicketsList.innerHTML = '<p class="empty-copy">No support tickets yet.</p>';
+                    return;
+                }
+
+                items.forEach(function (item) {
+                    var wrap = document.createElement('article');
+                    wrap.className = 'ticket-item';
+
+                    wrap.innerHTML =
+                        '<div class="ticket-top">' +
+                        '<div><strong>' + (item.farmer_name || 'Farmer') + '</strong><div class="muted">' + ((item.district || '') || 'No location') + '</div></div>' +
+                        '<span class="tag ' + (item.status_class || 'ticket-open') + '">' + (item.status_label || 'Open') + '</span>' +
+                        '</div>' +
+                        '<div class="ticket-copy">' + (item.message_text || 'No message text') + '</div>' +
+                        '<div class="ticket-meta">Ticket #' + (item.id || '-') + ' • ' + formatDate(item.created_at || '') + '</div>';
+
+                    supportTicketsList.appendChild(wrap);
+                });
+            }
+
+            function loadDashboard() {
+                if (window.location.protocol === 'file:') {
+                    setLoadError('Open this page from localhost/XAMPP (not file://) to load backend data.');
+                    return;
+                }
+
+                fetch(API_URL, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                    .then(function (response) {
+                        if (response.status === 401) {
+                            window.location.href = LOGIN_URL;
+                            return null;
+                        }
+
+                        if (!response.ok) {
+                            return response.json()
+                                .then(function (err) {
+                                    throw new Error((err && err.message) || ('HTTP ' + response.status));
+                                })
+                                .catch(function () {
+                                    throw new Error('HTTP ' + response.status);
+                                });
+                        }
+
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            setLoadError((data && data.message) || 'Failed to load admin dashboard data.');
+                            return;
+                        }
+
+                        applyStats(data.stats || {});
+                        renderFarmers(Array.isArray(data.recent_farmers) ? data.recent_farmers : []);
+                        renderCustomers(Array.isArray(data.recent_customers) ? data.recent_customers : []);
+                        renderProducts(Array.isArray(data.top_products) ? data.top_products : []);
+                        renderOrders(Array.isArray(data.recent_orders) ? data.recent_orders : []);
+                        renderTickets(Array.isArray(data.support_tickets) ? data.support_tickets : []);
+
+                        if (dashboardSubline) {
+                            dashboardSubline.textContent = 'Active users: ' + Number((data.stats && data.stats.active_users) || 0) +
+                                ' • Open tickets: ' + Number((data.stats && data.stats.open_tickets) || 0) +
+                                ' • Unread messages: ' + Number((data.stats && data.stats.unread_messages) || 0);
+                        }
+                    })
+                    .catch(function (error) {
+                        var message = (error && error.message) ? error.message : 'Network error while loading admin dashboard data.';
+                        setLoadError(message);
+                    });
+            }
+
+            loadDashboard();
+        })();
+    </script>
+</body>
+
+</html>

@@ -49,6 +49,11 @@ try {
         exit;
     }
 
+    if ($role === 'admin') {
+        header('Location: ../../pages/admin/admin-dashboard.html');
+        exit;
+    }
+
     if ($role === 'consumer') {
         header('Location: ../../pages/customer/customer-marketplace.html');
         exit;

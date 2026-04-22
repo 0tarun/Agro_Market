@@ -63,6 +63,18 @@
         }
     }
 
+    function applyAdminNav() {
+        loginBtn.textContent = 'Admin Dashboard';
+        loginBtn.href = appPath('/pages/admin/admin-dashboard.html');
+
+        registerBtn.textContent = 'Logout';
+        registerBtn.href = appPath('/api/auth/logout.php');
+
+        if (cartLink) {
+            cartLink.style.display = 'none';
+        }
+    }
+
     applyGuestNav();
 
     fetch(appPath('/api/auth/session-status.php'), {
@@ -84,6 +96,11 @@
 
             if (data && data.ok && data.is_authenticated === true && data.is_farmer === true) {
                 applyFarmerNav();
+                return;
+            }
+
+            if (data && data.ok && data.is_authenticated === true && data.is_admin === true) {
+                applyAdminNav();
                 return;
             }
 
