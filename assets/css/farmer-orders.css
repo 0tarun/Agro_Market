@@ -54,7 +54,7 @@
 .order-list-head,
 .order-row {
   display: grid;
-  grid-template-columns: 90px 1.1fr 0.9fr 1fr 1fr 1fr;
+  grid-template-columns: 90px 1.1fr 0.9fr 1fr 1fr 1fr 1fr 110px;
   align-items: center;
 }
 
@@ -128,6 +128,59 @@
   color: #f2a2a2;
 }
 
+.shipment-status {
+  font-weight: 700;
+}
+
+.shipment-status.not-created {
+  color: #8d96a6;
+}
+
+.shipment-status.preparing {
+  color: #d7e5bf;
+}
+
+.shipment-status.shipped,
+.shipment-status.in_transit,
+.shipment-status.out_for_delivery {
+  color: #9de28f;
+}
+
+.shipment-status.delivered {
+  color: #84e77c;
+}
+
+.shipment-action-cell {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.shipment-manage-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(137, 175, 94, 0.18);
+  border: 1px solid rgba(137, 175, 94, 0.35);
+  color: #edf7e4;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.shipment-manage-link:hover {
+  transform: translateY(-1px);
+  background: rgba(137, 175, 94, 0.28);
+}
+
+.shipment-manage-link:focus-visible {
+  outline: 2px solid rgba(149, 189, 102, 0.95);
+  outline-offset: 2px;
+}
+
 @media (max-width: 1200px) {
   .order-list-wrap {
     overflow-x: auto;
@@ -135,7 +188,7 @@
 
   .order-list-head,
   .order-row {
-    min-width: 840px;
+    min-width: 1080px;
   }
 }
 

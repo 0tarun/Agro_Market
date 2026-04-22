@@ -24,6 +24,9 @@ try {
 
 ensurePerishableProductSchema($pdo);
 
+require_once __DIR__ . '/../api/shared/shipment-migrate.php';
+ensureShipmentSchema($pdo);
+
 function ensurePerishableProductSchema(PDO $pdo): void
 {
     static $hasRun = false;

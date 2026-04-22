@@ -164,6 +164,30 @@ try {
         exit;
     }
 
+    // Auto-create shipment when farmer confirms an order
+    if ($action === 'confirm') {
+        $existingShipment = $pdo->prepare('SELECT id FROM shipments WHERE order_id = :oid LIMIT 1');
+        $existingShipment->execute([':oid' => $orderId]);
+        if (!$existingShipment->fetch()) {
+            $trackingCode = generateTrackingCode($pdo);
+            $insertShipment = $pdo->prepare(
+                'INSERT INTO shipments (order_id, tracking_code, status)
+                 VALUES (:order_id, :tracking_code, "preparing")'
+            );
+            $insertShipment->execute([
+                ':order_id' => $orderId,
+                ':tracking_code' => $trackingCode,
+            ]);
+            $shipmentId = (int)$pdo->lastInsertId();
+
+            $insertEvent = $pdo->prepare(
+                'INSERT INTO shipment_events (shipment_id, status, description)
+                 VALUES (:sid, "preparing", "Order confirmed, preparing package")'
+            );
+            $insertEvent->execute([':sid' => $shipmentId]);
+        }
+    }
+
     echo json_encode([
         'ok' => true,
         'message' => $successMessage,

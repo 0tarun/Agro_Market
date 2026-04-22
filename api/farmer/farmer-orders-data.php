@@ -51,7 +51,9 @@ try {
     $params = [':farmer_id' => $userId];
 
     if ($filter === 'to_receive') {
-        $where .= ' AND o.status IN ("pending", "to_receive")';
+        $where .= ' AND o.status IN ("pending", "to_receive") AND (s.id IS NULL OR s.status = "preparing")';
+    } elseif ($filter === 'shipped') {
+        $where .= ' AND s.status IN ("shipped", "in_transit", "out_for_delivery")';
     } elseif (in_array($filter, ['refund_return', 'completed', 'cancelled'], true)) {
         $where .= ' AND o.status = :status_filter';
         $params[':status_filter'] = $filter;
@@ -66,6 +68,11 @@ try {
             o.payment_status,
             o.payment_method,
             o.placed_at,
+                s.id AS shipment_id,
+                s.tracking_code,
+                s.status AS shipment_status,
+                s.estimated_delivery,
+                s.current_location,
             oi.product_name_snapshot,
             oi.qty,
             oi.line_total,
@@ -75,6 +82,7 @@ try {
          INNER JOIN order_items oi ON oi.order_id = o.id
          LEFT JOIN products p ON p.id = oi.product_id
          LEFT JOIN users u ON u.id = o.consumer_id
+            LEFT JOIN shipments s ON s.order_id = o.id
          WHERE ' . $where . '
          ORDER BY o.placed_at DESC, oi.id DESC
          LIMIT 250';
@@ -86,8 +94,11 @@ try {
     $items = [];
     foreach ($rows as $row) {
         $statusRaw = strtolower((string)($row['status'] ?? 'pending'));
+        $shipmentStatusRaw = strtolower((string)($row['shipment_status'] ?? ''));
         $statusClass = 'receive';
         $statusLabel = 'To receive';
+        $shipmentClass = 'not-created';
+        $shipmentLabel = 'Not created';
 
         if ($statusRaw === 'completed') {
             $statusClass = 'complete';
@@ -98,6 +109,11 @@ try {
         } elseif ($statusRaw === 'cancelled') {
             $statusClass = 'cancelled';
             $statusLabel = 'Cancelled';
+        }
+
+        if ($shipmentStatusRaw !== '') {
+            $shipmentClass = str_replace(' ', '-', $shipmentStatusRaw);
+            $shipmentLabel = ucwords(str_replace('_', ' ', $shipmentStatusRaw));
         }
 
         $paymentStatusRaw = strtolower((string)($row['payment_status'] ?? 'pending'));
@@ -113,6 +129,13 @@ try {
             'payment_label' => $paymentLabel,
             'status_label' => $statusLabel,
             'status_class' => $statusClass,
+            'shipment_id' => (int)($row['shipment_id'] ?? 0),
+            'tracking_code' => (string)($row['tracking_code'] ?? ''),
+            'shipment_status' => $shipmentStatusRaw,
+            'shipment_status_label' => $shipmentLabel,
+            'shipment_status_class' => $shipmentClass,
+            'shipment_location' => (string)($row['current_location'] ?? ''),
+            'shipment_estimated_delivery' => (string)($row['estimated_delivery'] ?? ''),
             'consumer_name' => (string)($row['consumer_name'] ?? 'Customer'),
             'image_path' => toPublicAssetPath((string)($row['image_path'] ?? '')),
         ];

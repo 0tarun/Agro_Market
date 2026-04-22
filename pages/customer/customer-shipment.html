@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Track Shipment - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/customer-account.css" />
+    <link rel="stylesheet" href="../../assets/css/customer-shipment.css" />
+</head>
+
+<body>
+    <main class="account-page">
+        <aside class="account-sidebar">
+            <div class="sidebar-top">
+                <img id="profileImage" class="profile-image" src="../../figma/images (2).jpg" alt="Customer profile" />
+                <h2 id="profileName" class="profile-name">Customer</h2>
+                <p id="profileLocation" class="profile-location">Location not set</p>
+
+                <nav class="sidebar-nav" aria-label="Customer account menu">
+                    <a href="customer-marketplace.html" class="nav-item">Product</a>
+                    <a href="customer-account.html" class="nav-item">Account Info</a>
+                    <a href="customer-orders.html" class="nav-item">Orders</a>
+                    <a href="customer-shipment.html" class="nav-item active">Shipments</a>
+                    <a href="#" class="nav-item">Notifications</a>
+                    <a href="customer-feedback.html" class="nav-item">Feedback</a>
+                </nav>
+            </div>
+
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="account-content shipment-content">
+            <header class="content-head shipment-head">
+                <h1>Shipment <span>Tracking</span></h1>
+            </header>
+
+            <!-- Tracking Header -->
+            <div id="trackingHeader" class="tracking-header" style="display:none;">
+                <div class="tracking-top">
+                    <div class="tracking-code-box">
+                        <div class="tracking-icon">&#128666;</div>
+                        <div class="tracking-code-text">
+                            <span class="tracking-code-label">Tracking Code</span>
+                            <span id="trackingCodeValue" class="tracking-code-value">-</span>
+                        </div>
+                    </div>
+                    <span id="carrierBadge" class="carrier-badge">AgroMarket Delivery</span>
+                </div>
+                <div id="deliveryEstimate" class="delivery-estimate" style="display:none;">
+                    <span class="delivery-estimate-icon">&#128197;</span>
+                    <span id="deliveryEstimateText" class="delivery-estimate-text">
+                        Estimated delivery: <strong>-</strong>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Stepper -->
+            <div id="stepperCard" class="stepper-card" style="display:none;">
+                <div id="stepper" class="stepper">
+                    <div class="stepper-progress" id="stepperProgress"></div>
+                    <div class="step" data-status="preparing">
+                        <div class="step-dot">&#128230;</div>
+                        <span class="step-label">Preparing</span>
+                    </div>
+                    <div class="step" data-status="shipped">
+                        <div class="step-dot">&#128666;</div>
+                        <span class="step-label">Shipped</span>
+                    </div>
+                    <div class="step" data-status="in_transit">
+                        <div class="step-dot">&#128667;</div>
+                        <span class="step-label">In Transit</span>
+                    </div>
+                    <div class="step" data-status="out_for_delivery">
+                        <div class="step-dot">&#128587;</div>
+                        <span class="step-label">Out for Delivery</span>
+                    </div>
+                    <div class="step" data-status="delivered">
+                        <div class="step-dot">&#9989;</div>
+                        <span class="step-label">Delivered</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div id="timelineCard" class="timeline-card" style="display:none;">
+                <h3>&#128203; Shipment Timeline</h3>
+                <div id="timelineContainer" class="timeline"></div>
+            </div>
+
+            <!-- Order Details -->
+            <div id="orderDetailsCard" class="order-details-card" style="display:none;">
+                <h3>&#128230; Order Details</h3>
+                <div class="order-detail-grid">
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Order Code</span>
+                        <span id="detailOrderCode" class="order-detail-value">-</span>
+                    </div>
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Farmer</span>
+                        <span id="detailFarmer" class="order-detail-value">-</span>
+                    </div>
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Total</span>
+                        <span id="detailTotal" class="order-detail-value">-</span>
+                    </div>
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Payment</span>
+                        <span id="detailPayment" class="order-detail-value">-</span>
+                    </div>
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Order Date</span>
+                        <span id="detailDate" class="order-detail-value">-</span>
+                    </div>
+                    <div class="order-detail-item">
+                        <span class="order-detail-label">Shipping Address</span>
+                        <span id="detailAddress" class="order-detail-value">-</span>
+                    </div>
+                </div>
+                <div id="orderItemsList" class="order-items-list" style="display:none;">
+                    <h4>Items</h4>
+                    <div id="orderItemsBody"></div>
+                </div>
+            </div>
+
+            <!-- Shipment List (when no specific order is selected) -->
+            <div id="shipmentListCard" class="timeline-card">
+                <h3>&#128230; Your Shipments</h3>
+                <div id="shipmentListBody"></div>
+                <p id="shipmentListEmpty" class="timeline-empty" style="display:none;">
+                    No active shipments found. Your shipments will appear here once a farmer confirms your order.
+                </p>
+            </div>
+
+            <!-- No shipment banner -->
+            <div id="noShipmentBanner" class="no-shipment-banner" style="display:none;">
+                <div class="no-ship-icon">&#128230;</div>
+                <p>No shipment found for this order. The farmer hasn't shipped your order yet.</p>
+                <p><a href="customer-orders.html" style="color:#93bd66;">← Back to Orders</a></p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        (function setupCustomerShipment() {
+            var SHIPMENT_API_URL = '../../api/customer/customer-shipment-data.php';
+            var PROFILE_API_URL = '../../api/customer/customer-checkout-data.php';
+            var FALLBACK_IMAGE = '../../figma/images (2).jpg';
+            var PROFILE_CACHE_KEY = 'agromarket_customer_profile_cache_v1';
+            var STATUSES = ['preparing', 'shipped', 'in_transit', 'out_for_delivery', 'delivered'];
+
+            var profileImage = document.getElementById('profileImage');
+            var profileName = document.getElementById('profileName');
+            var profileLocation = document.getElementById('profileLocation');
+
+            var trackingHeader = document.getElementById('trackingHeader');
+            var trackingCodeValue = document.getElementById('trackingCodeValue');
+            var carrierBadge = document.getElementById('carrierBadge');
+            var deliveryEstimate = document.getElementById('deliveryEstimate');
+            var deliveryEstimateText = document.getElementById('deliveryEstimateText');
+
+            var stepperCard = document.getElementById('stepperCard');
+            var stepper = document.getElementById('stepper');
+            var stepperProgress = document.getElementById('stepperProgress');
+            var steps = Array.prototype.slice.call(stepper.querySelectorAll('.step'));
+
+            var timelineCard = document.getElementById('timelineCard');
+            var timelineContainer = document.getElementById('timelineContainer');
+
+            var orderDetailsCard = document.getElementById('orderDetailsCard');
+            var detailOrderCode = document.getElementById('detailOrderCode');
+            var detailFarmer = document.getElementById('detailFarmer');
+            var detailTotal = document.getElementById('detailTotal');
+            var detailPayment = document.getElementById('detailPayment');
+            var detailDate = document.getElementById('detailDate');
+            var detailAddress = document.getElementById('detailAddress');
+            var orderItemsList = document.getElementById('orderItemsList');
+            var orderItemsBody = document.getElementById('orderItemsBody');
+
+            var shipmentListCard = document.getElementById('shipmentListCard');
+            var shipmentListBody = document.getElementById('shipmentListBody');
+            var shipmentListEmpty = document.getElementById('shipmentListEmpty');
+            var noShipmentBanner = document.getElementById('noShipmentBanner');
+
+            var params = new URLSearchParams(window.location.search);
+            var orderId = Number(params.get('order_id') || 0);
+
+            function formatDate(raw) {
+                if (!raw) return '-';
+                var d = new Date(raw);
+                if (isNaN(d.getTime())) return raw;
+                return d.toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+            }
+
+            function formatDateShort(raw) {
+                if (!raw) return '-';
+                var d = new Date(raw);
+                if (isNaN(d.getTime())) return raw;
+                return d.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
+            }
+
+            function statusLabel(s) {
+                var map = {
+                    'preparing': 'Preparing', 'shipped': 'Shipped',
+                    'in_transit': 'In Transit', 'out_for_delivery': 'Out for Delivery',
+                    'delivered': 'Delivered'
+                };
+                return map[s] || s;
+            }
+
+            // ── Profile ──
+            function readCachedProfile() {
+                try {
+                    var raw = localStorage.getItem(PROFILE_CACHE_KEY);
+                    if (!raw) return null;
+                    var parsed = JSON.parse(raw);
+                    return parsed && typeof parsed === 'object' ? parsed : null;
+                } catch (_) { return null; }
+            }
+
+            function applySidebarProfile(data) {
+                profileName.textContent = data.full_name || 'Customer';
+                profileLocation.textContent = data.address || 'Location not set';
+                profileImage.src = data.profile_image || FALLBACK_IMAGE;
+                profileImage.onerror = function () { profileImage.src = FALLBACK_IMAGE; };
+            }
+
+            function loadProfile() {
+                fetch(PROFILE_API_URL, { method: 'GET', credentials: 'same-origin' })
+                    .then(function (r) {
+                        if (r.status === 401) { window.location.href = '../auth/Login.html?error=Please+login+first'; return null; }
+                        if (!r.ok) throw new Error('Failed');
+                        return r.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) return;
+                        applySidebarProfile(data);
+                    })
+                    .catch(function () {
+                        var cached = readCachedProfile();
+                        if (cached) applySidebarProfile(cached);
+                    });
+            }
+
+            // ── Stepper ──
+            function updateStepper(currentStatus) {
+                var idx = STATUSES.indexOf(currentStatus);
+                if (idx < 0) idx = 0;
+
+                steps.forEach(function (step, i) {
+                    step.classList.remove('completed', 'active');
+                    if (i < idx) step.classList.add('completed');
+                    if (i === idx) step.classList.add('active');
+                });
+
+                var totalSteps = STATUSES.length - 1;
+                var progressPercent = totalSteps > 0 ? (idx / totalSteps) * 100 : 0;
+                var maxWidth = stepper.offsetWidth - 80;
+                stepperProgress.style.width = (progressPercent / 100 * maxWidth) + 'px';
+            }
+
+            // ── Timeline ──
+            function renderTimeline(events) {
+                timelineContainer.innerHTML = '';
+
+                if (!Array.isArray(events) || !events.length) {
+                    var empty = document.createElement('p');
+                    empty.className = 'timeline-empty';
+                    empty.textContent = 'No tracking events yet.';
+                    timelineContainer.appendChild(empty);
+                    return;
+                }
+
+                events.forEach(function (evt) {
+                    var item = document.createElement('div');
+                    item.className = 'timeline-item';
+
+                    var dot = document.createElement('div');
+                    dot.className = 'timeline-dot';
+                    item.appendChild(dot);
+
+                    var st = document.createElement('p');
+                    st.className = 'timeline-status';
+                    st.textContent = statusLabel(evt.status || '');
+                    item.appendChild(st);
+
+                    var time = document.createElement('p');
+                    time.className = 'timeline-time';
+                    time.textContent = formatDate(evt.event_at || '');
+                    item.appendChild(time);
+
+                    if (evt.location) {
+                        var loc = document.createElement('p');
+                        loc.className = 'timeline-location';
+                        loc.textContent = evt.location;
+                        item.appendChild(loc);
+                    }
+
+                    if (evt.description) {
+                        var desc = document.createElement('p');
+                        desc.className = 'timeline-desc';
+                        desc.textContent = evt.description;
+                        item.appendChild(desc);
+                    }
+
+                    timelineContainer.appendChild(item);
+                });
+            }
+
+            // ── Single Order Shipment View ──
+            function loadSingleShipment() {
+                shipmentListCard.style.display = 'none';
+
+                fetch(SHIPMENT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ action: 'get_shipment', order_id: orderId })
+                })
+                    .then(function (r) {
+                        if (r.status === 401) { window.location.href = '../auth/Login.html?error=Please+login+first'; return null; }
+                        return r.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            noShipmentBanner.style.display = 'block';
+                            return;
+                        }
+
+                        var order = data.order || {};
+
+                        // Order Details
+                        orderDetailsCard.style.display = 'block';
+                        detailOrderCode.textContent = '#' + (order.order_code || '-');
+                        detailFarmer.textContent = order.farmer_name || 'Farmer';
+                        detailTotal.textContent = '৳' + Number(order.total_amount || 0).toFixed(2);
+                        detailPayment.textContent = order.payment_method || 'Cash';
+                        detailDate.textContent = formatDate(order.placed_at || '');
+                        detailAddress.textContent = order.shipping_address || 'Not provided';
+
+                        // Order items
+                        if (Array.isArray(order.items) && order.items.length) {
+                            orderItemsList.style.display = 'block';
+                            orderItemsBody.innerHTML = '';
+                            order.items.forEach(function (item) {
+                                var row = document.createElement('div');
+                                row.className = 'order-item-row';
+                                var name = document.createElement('span');
+                                name.textContent = (item.product_name_snapshot || 'Product') + ' x' + (item.qty || 1);
+                                var price = document.createElement('span');
+                                price.textContent = '৳' + Number(item.line_total || 0).toFixed(2);
+                                row.appendChild(name);
+                                row.appendChild(price);
+                                orderItemsBody.appendChild(row);
+                            });
+                        }
+
+                        if (data.shipment) {
+                            var ship = data.shipment;
+
+                            // Tracking header
+                            trackingHeader.style.display = 'block';
+                            trackingCodeValue.textContent = ship.tracking_code || '-';
+                            carrierBadge.textContent = ship.carrier_name || 'AgroMarket Delivery';
+
+                            if (ship.estimated_delivery) {
+                                deliveryEstimate.style.display = 'flex';
+                                deliveryEstimateText.innerHTML = 'Estimated delivery: <strong>' + formatDateShort(ship.estimated_delivery) + '</strong>';
+                            }
+
+                            // Stepper
+                            stepperCard.style.display = 'block';
+                            setTimeout(function () { updateStepper(ship.status || 'preparing'); }, 100);
+
+                            // Timeline
+                            timelineCard.style.display = 'block';
+                            renderTimeline(data.events || []);
+                        } else {
+                            noShipmentBanner.style.display = 'block';
+                        }
+                    })
+                    .catch(function () {
+                        noShipmentBanner.style.display = 'block';
+                    });
+            }
+
+            // ── Shipments List View ──
+            function loadShipmentsList() {
+                trackingHeader.style.display = 'none';
+                stepperCard.style.display = 'none';
+                timelineCard.style.display = 'none';
+                orderDetailsCard.style.display = 'none';
+                noShipmentBanner.style.display = 'none';
+
+                fetch(SHIPMENT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ action: 'list_shipments' })
+                })
+                    .then(function (r) {
+                        if (r.status === 401) { window.location.href = '../auth/Login.html?error=Please+login+first'; return null; }
+                        return r.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            shipmentListEmpty.style.display = 'block';
+                            return;
+                        }
+
+                        var items = Array.isArray(data.items) ? data.items : [];
+                        if (!items.length) {
+                            shipmentListEmpty.style.display = 'block';
+                            return;
+                        }
+
+                        shipmentListEmpty.style.display = 'none';
+                        shipmentListBody.innerHTML = '';
+
+                        items.forEach(function (item) {
+                            var card = document.createElement('div');
+                            card.className = 'order-item-row';
+                            card.style.cursor = 'pointer';
+                            card.style.padding = '14px 12px';
+                            card.style.marginBottom = '8px';
+                            card.style.borderRadius = '12px';
+                            card.style.border = '1px solid rgba(255,255,255,0.08)';
+                            card.style.background = 'rgba(255,255,255,0.02)';
+                            card.style.display = 'flex';
+                            card.style.justifyContent = 'space-between';
+                            card.style.alignItems = 'center';
+                            card.style.gap = '10px';
+                            card.style.flexWrap = 'wrap';
+                            card.style.transition = 'border-color 0.2s, transform 0.15s';
+
+                            card.addEventListener('mouseenter', function () {
+                                card.style.borderColor = 'rgba(124,184,67,0.5)';
+                                card.style.transform = 'translateY(-1px)';
+                            });
+                            card.addEventListener('mouseleave', function () {
+                                card.style.borderColor = 'rgba(255,255,255,0.08)';
+                                card.style.transform = 'none';
+                            });
+
+                            card.addEventListener('click', function () {
+                                window.location.href = 'customer-shipment.html?order_id=' + item.order_id;
+                            });
+
+                            var left = document.createElement('div');
+
+                            var orderLine = document.createElement('p');
+                            orderLine.style.fontWeight = '600';
+                            orderLine.style.fontSize = '0.92rem';
+                            orderLine.style.marginBottom = '2px';
+                            orderLine.textContent = '#' + (item.order_code || '-') + '  •  ' + (item.products || 'Product');
+                            left.appendChild(orderLine);
+
+                            var meta = document.createElement('p');
+                            meta.style.fontSize = '0.78rem';
+                            meta.style.color = '#bcc8b6';
+                            meta.textContent = (item.farmer_name || 'Farmer') + '  •  ৳' + Number(item.total_amount || 0).toFixed(2) + '  •  ' + item.tracking_code;
+                            left.appendChild(meta);
+
+                            card.appendChild(left);
+
+                            var badge = document.createElement('span');
+                            badge.className = 'status-badge ' + (item.shipment_status || 'preparing');
+                            badge.textContent = statusLabel(item.shipment_status || 'preparing');
+                            card.appendChild(badge);
+
+                            shipmentListBody.appendChild(card);
+                        });
+                    })
+                    .catch(function () {
+                        shipmentListEmpty.style.display = 'block';
+                        shipmentListEmpty.textContent = 'Network error loading shipments.';
+                    });
+            }
+
+            // ── Init ──
+            var cached = readCachedProfile();
+            if (cached) applySidebarProfile(cached);
+            loadProfile();
+
+            if (orderId > 0) {
+                loadSingleShipment();
+            } else {
+                loadShipmentsList();
+            }
+        })();
+    </script>
+</body>
+
+</html>

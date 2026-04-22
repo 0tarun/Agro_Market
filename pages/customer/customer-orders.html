@@ -25,6 +25,7 @@
                     <a href="../../index.html" class="nav-item">Home</a>
                     <a href="customer-account.html" class="nav-item">Account Info</a>
                     <a href="customer-orders.html" class="nav-item active">Orders</a>
+                    <a href="customer-shipment.html" class="nav-item">Shipments</a>
                     <a href="#" class="nav-item">Notifications</a>
                     <a href="customer-feedback.html" class="nav-item">Feedback</a>
                 </nav>
@@ -46,6 +47,7 @@
                 <h1>Order <span>History</span></h1>
                 <div class="order-summary">
                     <span id="processingCount" class="summary-pill">Processing: 0</span>
+                    <span id="shippedCount" class="summary-pill">Shipped: 0</span>
                     <span id="refundCount" class="summary-pill">Refund/Return: 0</span>
                     <span id="completedCount" class="summary-pill">Completed: 0</span>
                 </div>
@@ -54,6 +56,7 @@
             <div class="order-filters" role="group" aria-label="Order filter">
                 <button type="button" class="filter-chip active" data-filter="all">All</button>
                 <button type="button" class="filter-chip" data-filter="to_receive">To Receive</button>
+                <button type="button" class="filter-chip" data-filter="shipped">Shipped</button>
                 <button type="button" class="filter-chip" data-filter="refund_return">Refund/Return</button>
                 <button type="button" class="filter-chip" data-filter="completed">Completed</button>
                 <button type="button" class="filter-chip" data-filter="cancelled">Cancelled</button>
@@ -79,11 +82,12 @@
                                 <th>Price</th>
                                 <th>Payment</th>
                                 <th>Status</th>
+                                <th>Track</th>
                             </tr>
                         </thead>
                         <tbody id="ordersTableBody">
                             <tr>
-                                <td colspan="6">Loading orders...</td>
+                                <td colspan="7">Loading orders...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -104,6 +108,7 @@
             var profileName = document.getElementById('profileName');
             var profileLocation = document.getElementById('profileLocation');
             var processingCount = document.getElementById('processingCount');
+            var shippedCount = document.getElementById('shippedCount');
             var refundCount = document.getElementById('refundCount');
             var completedCount = document.getElementById('completedCount');
             var ordersTableBody = document.getElementById('ordersTableBody');
@@ -176,7 +181,7 @@
                 if (!Array.isArray(items) || !items.length) {
                     var emptyRow = document.createElement('tr');
                     var cell = document.createElement('td');
-                    cell.colSpan = 6;
+                    cell.colSpan = 7;
                     cell.textContent = 'No orders found.';
                     emptyRow.appendChild(cell);
                     ordersTableBody.appendChild(emptyRow);
@@ -211,15 +216,26 @@
                     row.appendChild(price);
                     row.appendChild(payment);
                     row.appendChild(status);
+
+                    var action = document.createElement('td');
+                    var trackLink = document.createElement('a');
+                    trackLink.className = 'order-track-link';
+                    trackLink.href = 'customer-shipment.html?order_id=' + encodeURIComponent(String(item.order_id || 0));
+                    trackLink.textContent = 'Track Shipment';
+                    action.appendChild(trackLink);
+                    row.appendChild(action);
+
                     ordersTableBody.appendChild(row);
                 });
             }
 
             function renderSummary(summary) {
                 var processing = Number((summary && summary.processing_count) || 0);
+                var shipped = Number((summary && summary.shipped_count) || 0);
                 var refund = Number((summary && summary.refund_count) || 0);
                 var completed = Number((summary && summary.completed_count) || 0);
                 processingCount.textContent = 'Processing: ' + String(processing);
+                shippedCount.textContent = 'Shipped: ' + String(shipped);
                 refundCount.textContent = 'Refund/Return: ' + String(refund);
                 completedCount.textContent = 'Completed: ' + String(completed);
             }

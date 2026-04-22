@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Shipment - AgroMarket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/css/farmer-dashboard.css" />
+    <link rel="stylesheet" href="../../assets/css/farmer-shipment.css" />
+</head>
+
+<body>
+    <main class="dashboard-page">
+        <aside class="sidebar">
+            <div>
+                <div class="profile-block">
+                    <img id="sidebarProfileImage" src="../../figma/images (5).jpg" alt="Farmer profile"
+                        class="profile-image" />
+                    <h2 id="sidebarProfileName" class="profile-name">My Farmer Account</h2>
+                    <p id="sidebarProfileLocation" class="profile-location">Loading...</p>
+                </div>
+
+                <nav class="menu" aria-label="Sidebar menu">
+                    <a href="../../index.html" class="menu-item">
+                        <span class="menu-icon">&#8962;</span>
+                        Home
+                    </a>
+                    <a href="farmer-dashboard.html" class="menu-item">
+                        <span class="menu-icon">&#9638;</span>
+                        Overview
+                    </a>
+                    <a href="farmer-products.html" class="menu-item">
+                        <span class="menu-icon">&#9635;</span>
+                        Products
+                    </a>
+                    <a href="farmer-orders.html" class="menu-item active">
+                        <span class="menu-icon">&#9745;</span>
+                        Orders
+                    </a>
+                    <a href="farmer-feedback.html" class="menu-item">
+                        <span class="menu-icon">&#9993;</span>
+                        Feedback
+                    </a>
+                    <a href="farmer-help-support.html" class="menu-item">
+                        <span class="menu-icon">?</span>
+                        Help and Support
+                    </a>
+                    <a href="farmer-account.html" class="menu-item">
+                        <span class="menu-icon">&#9787;</span>
+                        Account
+                    </a>
+                </nav>
+            </div>
+
+            <a href="../../api/auth/logout.php" class="logout-btn">Logout</a>
+        </aside>
+
+        <section class="main-panel shipment-main">
+            <a href="farmer-orders.html" class="shipment-back">&larr; Back to Orders</a>
+            <h1 class="shipment-title">Manage <span>Shipment</span></h1>
+
+            <!-- Order Info -->
+            <div id="orderInfoCard" class="order-info-card">
+                <div class="order-info-head">
+                    <h3>&#128230; Order Details</h3>
+                    <span id="orderCodeBadge" class="order-code-badge">Loading...</span>
+                </div>
+                <div id="orderInfoGrid" class="order-info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Customer</span>
+                        <span id="infoCustomer" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total</span>
+                        <span id="infoTotal" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Payment</span>
+                        <span id="infoPayment" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Order Date</span>
+                        <span id="infoDate" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Shipping Address</span>
+                        <span id="infoAddress" class="info-value">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stepper -->
+            <div class="shipment-stepper-card">
+                <h3>&#128666; Shipment Progress</h3>
+                <div id="stepper" class="stepper">
+                    <div class="stepper-progress" id="stepperProgress"></div>
+                    <div class="step" data-status="preparing">
+                        <div class="step-dot">&#128230;</div>
+                        <span class="step-label">Preparing</span>
+                    </div>
+                    <div class="step" data-status="shipped">
+                        <div class="step-dot">&#128666;</div>
+                        <span class="step-label">Shipped</span>
+                    </div>
+                    <div class="step" data-status="in_transit">
+                        <div class="step-dot">&#128667;</div>
+                        <span class="step-label">In Transit</span>
+                    </div>
+                    <div class="step" data-status="out_for_delivery">
+                        <div class="step-dot">&#128587;</div>
+                        <span class="step-label">Out for Delivery</span>
+                    </div>
+                    <div class="step" data-status="delivered">
+                        <div class="step-dot">&#9989;</div>
+                        <span class="step-label">Delivered</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Form -->
+            <div id="updateCard" class="shipment-update-card">
+                <h3>&#9998; Update Shipment</h3>
+                <form id="updateForm" class="update-form" novalidate>
+                    <div class="form-group">
+                        <label for="shipStatus">Status</label>
+                        <select id="shipStatus">
+                            <option value="preparing">Preparing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="in_transit">In Transit</option>
+                            <option value="out_for_delivery">Out for Delivery</option>
+                            <option value="delivered">Delivered</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="shipEstDelivery">Estimated Delivery</label>
+                        <input id="shipEstDelivery" type="date" />
+                    </div>
+                    <div class="form-group">
+                        <label for="shipLocation">Current Location</label>
+                        <input id="shipLocation" type="text" placeholder="e.g. Dhaka Sorting Hub" maxlength="255" />
+                    </div>
+                    <div class="form-group">
+                        <label for="shipNotes">Notes</label>
+                        <input id="shipNotes" type="text" placeholder="Optional note" maxlength="300" />
+                    </div>
+                    <div class="update-actions">
+                        <button id="updateBtn" type="submit" class="update-btn">Update Shipment</button>
+                        <p id="updateMessage" class="update-message"></p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline-card">
+                <h3>&#128203; Shipment History</h3>
+                <div id="timelineContainer" class="timeline">
+                    <p class="timeline-empty">No shipment events yet.</p>
+                </div>
+            </div>
+
+            <p id="noShipmentMsg" class="no-shipment-msg" style="display:none;">
+                No shipment has been created for this order yet. Confirm the order first.
+            </p>
+        </section>
+    </main>
+    <script src="../../assets/js/farmer-sidebar.js"></script>
+    <script>
+        (function setupFarmerShipment() {
+            var API_URL = '../../api/farmer/farmer-shipment-action.php';
+            var STATUSES = ['preparing', 'shipped', 'in_transit', 'out_for_delivery', 'delivered'];
+
+            var orderCodeBadge = document.getElementById('orderCodeBadge');
+            var infoCustomer = document.getElementById('infoCustomer');
+            var infoTotal = document.getElementById('infoTotal');
+            var infoPayment = document.getElementById('infoPayment');
+            var infoDate = document.getElementById('infoDate');
+            var infoAddress = document.getElementById('infoAddress');
+            var stepper = document.getElementById('stepper');
+            var stepperProgress = document.getElementById('stepperProgress');
+            var steps = Array.prototype.slice.call(stepper.querySelectorAll('.step'));
+            var shipStatus = document.getElementById('shipStatus');
+            var shipEstDelivery = document.getElementById('shipEstDelivery');
+            var shipLocation = document.getElementById('shipLocation');
+            var shipNotes = document.getElementById('shipNotes');
+            var updateForm = document.getElementById('updateForm');
+            var updateBtn = document.getElementById('updateBtn');
+            var updateMessage = document.getElementById('updateMessage');
+            var timelineContainer = document.getElementById('timelineContainer');
+            var noShipmentMsg = document.getElementById('noShipmentMsg');
+            var updateCard = document.getElementById('updateCard');
+
+            var params = new URLSearchParams(window.location.search);
+            var orderId = Number(params.get('order_id') || 0);
+            if (orderId <= 0) {
+                orderId = Number(sessionStorage.getItem('agromarket_farmer_shipment_order_id') || 0);
+            }
+
+            if (orderId <= 0) {
+                noShipmentMsg.style.display = 'block';
+                noShipmentMsg.textContent = 'Invalid order. Please go back and select an order.';
+                return;
+            }
+
+            function formatDate(raw) {
+                if (!raw) return '-';
+                var d = new Date(raw);
+                if (isNaN(d.getTime())) return raw;
+                return d.toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+            }
+
+            function formatDateShort(raw) {
+                if (!raw) return '-';
+                var d = new Date(raw);
+                if (isNaN(d.getTime())) return raw;
+                return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+
+            function statusLabel(s) {
+                var map = {
+                    'preparing': 'Preparing',
+                    'shipped': 'Shipped',
+                    'in_transit': 'In Transit',
+                    'out_for_delivery': 'Out for Delivery',
+                    'delivered': 'Delivered'
+                };
+                return map[s] || s;
+            }
+
+            function updateStepper(currentStatus) {
+                var idx = STATUSES.indexOf(currentStatus);
+                if (idx < 0) idx = 0;
+
+                steps.forEach(function (step, i) {
+                    step.classList.remove('completed', 'active');
+                    if (i < idx) step.classList.add('completed');
+                    if (i === idx) step.classList.add('active');
+                });
+
+                // Calculate progress bar width
+                var totalSteps = STATUSES.length - 1;
+                var progressPercent = totalSteps > 0 ? (idx / totalSteps) * 100 : 0;
+                var maxWidth = stepper.offsetWidth - 72;
+                stepperProgress.style.width = (progressPercent / 100 * maxWidth) + 'px';
+            }
+
+            function renderTimeline(events) {
+                timelineContainer.innerHTML = '';
+
+                if (!Array.isArray(events) || !events.length) {
+                    var empty = document.createElement('p');
+                    empty.className = 'timeline-empty';
+                    empty.textContent = 'No shipment events yet.';
+                    timelineContainer.appendChild(empty);
+                    return;
+                }
+
+                events.forEach(function (evt) {
+                    var item = document.createElement('div');
+                    item.className = 'timeline-item';
+
+                    var dot = document.createElement('div');
+                    dot.className = 'timeline-dot';
+                    item.appendChild(dot);
+
+                    var statusEl = document.createElement('p');
+                    statusEl.className = 'timeline-status';
+                    statusEl.textContent = statusLabel(evt.status || '');
+                    item.appendChild(statusEl);
+
+                    var time = document.createElement('p');
+                    time.className = 'timeline-time';
+                    time.textContent = formatDate(evt.event_at || '');
+                    item.appendChild(time);
+
+                    if (evt.location) {
+                        var loc = document.createElement('p');
+                        loc.className = 'timeline-location';
+                        loc.textContent = evt.location;
+                        item.appendChild(loc);
+                    }
+
+                    if (evt.description) {
+                        var desc = document.createElement('p');
+                        desc.className = 'timeline-desc';
+                        desc.textContent = evt.description;
+                        item.appendChild(desc);
+                    }
+
+                    timelineContainer.appendChild(item);
+                });
+            }
+
+            function loadShipment() {
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ action: 'get_shipment', order_id: orderId })
+                })
+                    .then(function (r) {
+                        if (r.status === 401) { window.location.href = '../auth/Login.html?error=Please+login+first'; return null; }
+                        return r.json();
+                    })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            noShipmentMsg.style.display = 'block';
+                            noShipmentMsg.textContent = (data && data.message) || 'Failed to load shipment data.';
+                            return;
+                        }
+
+                        var order = data.order || {};
+                        orderCodeBadge.textContent = '#' + (order.order_code || '-');
+                        infoCustomer.textContent = order.consumer_name || 'Customer';
+                        infoTotal.textContent = '৳' + Number(order.total_amount || 0).toFixed(2);
+                        infoPayment.textContent = order.payment_method || 'Cash';
+                        infoDate.textContent = formatDate(order.placed_at || '');
+                        infoAddress.textContent = order.shipping_address || 'Not provided';
+
+                        if (data.shipment) {
+                            noShipmentMsg.style.display = 'none';
+                            var ship = data.shipment;
+                            shipStatus.value = ship.status || 'preparing';
+                            shipLocation.value = ship.current_location || '';
+                            if (ship.estimated_delivery) {
+                                shipEstDelivery.value = ship.estimated_delivery;
+                            }
+                            updateStepper(ship.status || 'preparing');
+                        } else {
+                            noShipmentMsg.style.display = 'block';
+                            updateCard.style.display = 'none';
+                        }
+
+                        renderTimeline(data.events || []);
+                    })
+                    .catch(function () {
+                        noShipmentMsg.style.display = 'block';
+                        noShipmentMsg.textContent = 'Network error loading shipment data.';
+                    });
+            }
+
+            updateForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                updateBtn.disabled = true;
+                updateMessage.textContent = 'Updating...';
+                updateMessage.className = 'update-message';
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        action: 'update_shipment',
+                        order_id: orderId,
+                        status: shipStatus.value,
+                        location: shipLocation.value,
+                        notes: shipNotes.value,
+                        estimated_delivery: shipEstDelivery.value
+                    })
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data || !data.ok) {
+                            updateMessage.textContent = (data && data.message) || 'Update failed.';
+                            updateMessage.className = 'update-message error';
+                            updateBtn.disabled = false;
+                            return;
+                        }
+
+                        updateMessage.textContent = data.message || 'Shipment updated!';
+                        updateMessage.className = 'update-message success';
+                        shipNotes.value = '';
+                        updateBtn.disabled = false;
+                        loadShipment();
+                    })
+                    .catch(function () {
+                        updateMessage.textContent = 'Network error.';
+                        updateMessage.className = 'update-message error';
+                        updateBtn.disabled = false;
+                    });
+            });
+
+            try {
+                sessionStorage.setItem('agromarket_farmer_shipment_order_id', String(orderId));
+            } catch (_) {}
+
+            loadShipment();
+        })();
+    </script>
+</body>
+
+</html>

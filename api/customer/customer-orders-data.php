@@ -47,11 +47,15 @@ try {
     $input = json_decode((string)file_get_contents('php://input'), true) ?? [];
     $filter = strtolower(trim((string)($input['filter'] ?? 'all')));
 
+    $activeShipmentStatuses = ['shipped', 'in_transit', 'out_for_delivery'];
+
     $where = 'o.consumer_id = :consumer_id';
     $params = [':consumer_id' => $userId];
 
     if ($filter === 'to_receive') {
-        $where .= ' AND o.status IN ("pending", "to_receive")';
+        $where .= ' AND o.status IN ("pending", "to_receive") AND (s.id IS NULL OR s.status = "preparing")';
+    } elseif ($filter === 'shipped') {
+        $where .= ' AND s.status IN ("shipped", "in_transit", "out_for_delivery")';
     } elseif (in_array($filter, ['refund_return', 'completed', 'cancelled'], true)) {
         $where .= ' AND o.status = :status_filter';
         $params[':status_filter'] = $filter;
@@ -65,11 +69,16 @@ try {
             o.status,
             o.payment_method,
             o.placed_at,
+                s.tracking_code,
+                s.status AS shipment_status,
+                s.current_location,
+                s.estimated_delivery,
             oi.product_name_snapshot,
             oi.qty,
             oi.line_total
          FROM orders o
          INNER JOIN order_items oi ON oi.order_id = o.id
+            LEFT JOIN shipments s ON s.order_id = o.id
          WHERE ' . $where . '
          ORDER BY o.placed_at DESC, oi.id DESC
          LIMIT 250'
@@ -81,10 +90,15 @@ try {
 
     foreach ($rows as $row) {
         $statusRaw = strtolower((string)($row['status'] ?? 'pending'));
+        $shipmentStatusRaw = strtolower((string)($row['shipment_status'] ?? ''));
+        $hasActiveShipment = in_array($shipmentStatusRaw, $activeShipmentStatuses, true);
         $statusClass = 'processing';
         $statusLabel = 'Processing';
 
-        if ($statusRaw === 'completed') {
+        if ($hasActiveShipment) {
+            $statusClass = 'shipped';
+            $statusLabel = 'Shipped';
+        } elseif ($statusRaw === 'completed') {
             $statusClass = 'completed';
             $statusLabel = 'Completed';
         } elseif ($statusRaw === 'refund_return') {
@@ -106,12 +120,38 @@ try {
             'payment_method' => ucwords(str_replace('_', ' ', (string)($row['payment_method'] ?? 'cash'))),
             'status_class' => $statusClass,
             'status_label' => $statusLabel,
+            'tracking_code' => (string)($row['tracking_code'] ?? ''),
+            'shipment_status' => $shipmentStatusRaw,
+            'shipment_location' => (string)($row['current_location'] ?? ''),
+            'shipment_estimated_delivery' => (string)($row['estimated_delivery'] ?? ''),
         ];
     }
 
     $summaryStmt = $pdo->prepare(
         'SELECT
-            SUM(CASE WHEN status IN ("pending", "to_receive") THEN 1 ELSE 0 END) AS processing_count,
+            SUM(
+                CASE
+                    WHEN status IN ("pending", "to_receive")
+                         AND NOT EXISTS (
+                             SELECT 1
+                             FROM shipments s
+                             WHERE s.order_id = orders.id
+                               AND s.status IN ("shipped", "in_transit", "out_for_delivery")
+                         )
+                    THEN 1 ELSE 0
+                END
+            ) AS processing_count,
+            SUM(
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1
+                        FROM shipments s
+                        WHERE s.order_id = orders.id
+                          AND s.status IN ("shipped", "in_transit", "out_for_delivery")
+                    )
+                    THEN 1 ELSE 0
+                END
+            ) AS shipped_count,
             SUM(CASE WHEN status = "refund_return" THEN 1 ELSE 0 END) AS refund_count,
             SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) AS completed_count,
             COUNT(*) AS total_orders
@@ -125,6 +165,7 @@ try {
         'ok' => true,
         'summary' => [
             'processing_count' => (int)($summary['processing_count'] ?? 0),
+            'shipped_count' => (int)($summary['shipped_count'] ?? 0),
             'refund_count' => (int)($summary['refund_count'] ?? 0),
             'completed_count' => (int)($summary['completed_count'] ?? 0),
             'total_orders' => (int)($summary['total_orders'] ?? 0),

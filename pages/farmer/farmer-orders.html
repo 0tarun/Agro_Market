@@ -41,6 +41,10 @@
                         <span class="menu-icon">&#9745;</span>
                         Orders
                     </a>
+                    <a href="farmer-shipment.html" class="menu-item">
+                        <span class="menu-icon">&#128230;</span>
+                        Shipments
+                    </a>
                     <a href="farmer-feedback.html" class="menu-item">
                         <span class="menu-icon">&#9993;</span>
                         Feedback
@@ -65,6 +69,7 @@
             <div class="order-filters" role="tablist" aria-label="Order filters">
                 <button class="filter-pill active" type="button" data-filter="all">All</button>
                 <button class="filter-pill" type="button" data-filter="to_receive">To Receive</button>
+                <button class="filter-pill" type="button" data-filter="shipped">Shipped</button>
                 <button class="filter-pill" type="button" data-filter="refund_return">Refund/Return</button>
                 <button class="filter-pill" type="button" data-filter="completed">Completed</button>
                 <button class="filter-pill" type="button" data-filter="cancelled">Cancelled</button>
@@ -78,6 +83,8 @@
                     <span>Total Price</span>
                     <span>Payment</span>
                     <span>Status</span>
+                    <span>Shipment</span>
+                    <span>Action</span>
                 </div>
                 <div id="ordersRows" class="orders-rows" aria-live="polite"></div>
                 <p id="ordersEmptyState" class="orders-empty">No orders found for this filter.</p>
@@ -91,6 +98,7 @@
             var DEFAULT_IMAGE = '../../figma/images (2).jpg';
             var currentFilter = 'all';
             var ORDER_ID_STORAGE_KEY = 'agromarket_farmer_customer_order_id_v1';
+            var SHIPMENT_ORDER_ID_STORAGE_KEY = 'agromarket_farmer_shipment_order_id_v1';
 
             var filterButtons = Array.prototype.slice.call(document.querySelectorAll('.filter-pill'));
             var ordersRows = document.getElementById('ordersRows');
@@ -168,6 +176,29 @@
                 status.className = 'status ' + (item.status_class || 'receive');
                 status.textContent = item.status_label || 'To receive';
                 row.appendChild(status);
+
+                var shipment = document.createElement('p');
+                shipment.className = 'shipment-status ' + (item.shipment_status_class || 'not-created');
+                shipment.textContent = item.shipment_status_label || 'Not created';
+                row.appendChild(shipment);
+
+                var actionCell = document.createElement('div');
+                actionCell.className = 'shipment-action-cell';
+
+                var manageLink = document.createElement('a');
+                manageLink.className = 'shipment-manage-link';
+                manageLink.href = 'farmer-shipment.html?order_id=' + encodeURIComponent(String(item.order_id || 0));
+                manageLink.textContent = 'Manage Shipment';
+                manageLink.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    try {
+                        sessionStorage.setItem(SHIPMENT_ORDER_ID_STORAGE_KEY, String(item.order_id || 0));
+                    } catch (_) {
+                        // Ignore storage failures.
+                    }
+                });
+                actionCell.appendChild(manageLink);
+                row.appendChild(actionCell);
 
                 return row;
             }

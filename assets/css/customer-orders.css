@@ -114,7 +114,7 @@
 .orders-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 680px;
+  min-width: 840px;
 }
 
 .orders-table th,
@@ -136,6 +136,11 @@
   font-weight: 700;
 }
 
+.status-cell.shipped {
+  color: #9ae58f;
+  font-weight: 700;
+}
+
 .status-cell.completed {
   color: #84e77c;
   font-weight: 700;
@@ -149,6 +154,32 @@
 .status-cell.cancelled {
   color: #ff9494;
   font-weight: 700;
+}
+
+.order-track-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(137, 175, 94, 0.18);
+  border: 1px solid rgba(137, 175, 94, 0.35);
+  color: #edf7e4;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.order-track-link:hover {
+  transform: translateY(-1px);
+  background: rgba(137, 175, 94, 0.28);
+}
+
+.order-track-link:focus-visible {
+  outline: 2px solid rgba(149, 189, 102, 0.95);
+  outline-offset: 2px;
 }
 
 @media (max-width: 980px) {
